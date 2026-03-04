@@ -10,11 +10,24 @@
       </v-card-text>
     </v-card>
   </div>
+
+  <div>
+    <v-btn
+      type="button"
+              color="primary"
+              size="large"
+              block
+             @click="doTestClick">
+      TEST
+    </v-btn>
+    {{ result }}
+  </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useAppStore } from '@/stores/app'
+import { DefaultApi } from '@/api/generated'
 
 const appStore = useAppStore()
 
@@ -24,4 +37,15 @@ onMounted(() => {
     { title: '文件模板下载' }
   ])
 })
+
+
+const result = ref("")
+const doTestClick = async () => {
+ const api = new DefaultApi()
+  const response = await api.test()
+
+  response = JSON.stringify(response.data, null, 2)
+
+  result.value = response.data
+}
 </script>
