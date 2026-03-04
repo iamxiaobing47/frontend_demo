@@ -14,20 +14,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useAppStore } from '@/stores/app'
-import { DefaultApi } from '@/api/generated'
+import { useTestApi } from '@/composables/useTestApi'
 
 const appStore = useAppStore()
-const result = ref('')
+const { result, testApi } = useTestApi()
 
 onMounted(() => {
   appStore.setBreadcrumbs([])
 })
-
-const testApi = async () => {
-  const api = new DefaultApi()
-  const response = await api.test()
-  result.value = response.data.data || ''
-}
 </script>
