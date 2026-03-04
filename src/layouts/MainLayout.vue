@@ -1,6 +1,9 @@
 <template>
   <v-app>
     <v-app-bar elevation="1" color="white">
+      <v-btn icon @click="goHome">
+        <v-icon>mdi-home</v-icon>
+      </v-btn>
       <v-app-bar-nav-icon @click="appStore.toggleDrawer" />
       <v-toolbar-title>Frontend Demo</v-toolbar-title>
       <v-spacer />
@@ -62,7 +65,7 @@ const authStore = useAuthStore()
 const router = useRouter()
 
 const menuItems = computed(() => {
-  const routes = router.getRoutes().filter(r => r.path !== '' && r.meta?.title)
+  const routes = router.getRoutes().filter(r => r.path !== '' && r.meta?.title && r.meta?.showInNav !== false)
   return routes.map(r => ({
     title: r.meta.title as string || r.name as string,
     to: r.path || '/',
@@ -85,5 +88,9 @@ const getIcon = (name: string) => {
 const handleLogout = () => {
   authStore.logout()
   router.push('/login-index')
+}
+
+const goHome = () => {
+  router.push('/index')
 }
 </script>

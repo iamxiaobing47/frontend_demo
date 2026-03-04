@@ -24,7 +24,7 @@ for (const path in pagesDir) {
       path: '/login-index',
       name: 'login-index',
       component,
-      meta: { title: '首页' }
+      meta: { title: '首页', showInNav: false }
     })
     continue
   }
@@ -44,7 +44,7 @@ for (const path in pagesDir) {
   let metaTitle = fileName.replace('Page', '')
   
   if (fileName === 'index') {
-    routePath = '/'
+    routePath = '/index'
     routeName = 'index'
     metaTitle = '首页'
   }
@@ -60,7 +60,7 @@ for (const path in pagesDir) {
     path: routePath,
     name: routeName,
     component,
-    meta: { title: metaTitle }
+    meta: { title: metaTitle, showInNav: fileName !== 'IndexPage', requiresAuth: true }
   }
   
   if (!routes[0].children!.some(r => r.path === routePath)) {
@@ -69,8 +69,8 @@ for (const path in pagesDir) {
 }
 
 routes[0].children!.sort((a, b) => {
-  if (a.path === '/') return -1
-  if (b.path === '/') return 1
+  if (a.path === '/index') return -1
+  if (b.path === '/index') return 1
   return a.path.localeCompare(b.path)
 })
 
@@ -84,12 +84,12 @@ router.beforeEach((to, _from, next) => {
   const isAuthenticated = authStore.isAuthenticated()
   
   if (to.path === '/login-index' && isAuthenticated) {
-    next('/dashboard')
+    next('/index')
     return
   }
   
   if (to.path === '/' && isAuthenticated) {
-    next('/dashboard')
+    next('/index')
     return
   }
   
