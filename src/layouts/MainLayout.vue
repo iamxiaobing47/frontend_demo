@@ -84,5 +84,6 @@ const getIcon = (name: string) => {
 
 const handleLogout = () => {
   authStore.logout()
+  router.push('/login-index')
 }
 </script>
