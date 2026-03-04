@@ -11,6 +11,13 @@ const apiClient: AxiosInstance = axios.create({
   }
 })
 
+export interface ApiResponse<T = any> {
+  success: boolean
+  data: T
+  messageCode?: string
+  messageArgs?: string[]
+}
+
 apiClient.interceptors.request.use(
   (config) => {
     const authStore = useAuthStore()
@@ -25,7 +32,7 @@ apiClient.interceptors.request.use(
 )
 
 apiClient.interceptors.response.use(
-  (response: AxiosResponse) => {
+  (response: AxiosResponse<ApiResponse>) => {
     return response
   },
   async (error) => {
@@ -38,8 +45,8 @@ apiClient.interceptors.response.use(
   }
 )
 
-export const request = async <T = any>(config: AxiosRequestConfig): Promise<T> => {
-  const response = await apiClient.request<T>(config)
+export const request = async <T = any>(config: AxiosRequestConfig): Promise<ApiResponse<T>> => {
+  const response = await apiClient.request<ApiResponse<T>>(config)
   return response.data
 }
 
