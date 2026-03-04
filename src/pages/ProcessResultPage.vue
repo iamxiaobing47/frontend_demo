@@ -28,15 +28,15 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { useAppStore } from '@/stores/app'
+import { onMounted } from "vue";
+import { useAppStore } from "@/stores/app";
 
-const appStore = useAppStore()
+const appStore = useAppStore();
 
 onMounted(() => {
   appStore.setBreadcrumbs([
-    { title: '首页', to: '/index' },
-    { title: '文件处理结果' }
-  ])
-})
+    { title: "首页", to: "/index" },
+    { title: "文件处理结果" },
+  ]);
+});
 </script>

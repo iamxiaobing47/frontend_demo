@@ -22,7 +22,11 @@
           <v-list-item prepend-icon="mdi-account" title="Profile" />
           <v-list-item prepend-icon="mdi-cog" title="Settings" />
           <v-divider />
-          <v-list-item prepend-icon="mdi-logout" title="Logout" @click="handleLogout" />
+          <v-list-item
+            prepend-icon="mdi-logout"
+            title="Logout"
+            @click="handleLogout"
+          />
         </v-list>
       </v-menu>
     </v-app-bar>
@@ -43,7 +47,11 @@
 
     <v-main>
       <v-container fluid class="pa-4">
-        <v-breadcrumbs v-if="appStore.breadcrumbs.length" :items="appStore.breadcrumbs" class="pa-0 mb-4">
+        <v-breadcrumbs
+          v-if="appStore.breadcrumbs.length"
+          :items="appStore.breadcrumbs"
+          class="pa-0 mb-4"
+        >
           <template #divider>
             <v-icon icon="mdi-chevron-right" />
           </template>
@@ -55,42 +63,46 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useAppStore } from '@/stores/app'
-import { useAuthStore } from '@/stores/auth'
-import { useRouter } from 'vue-router'
+import { computed } from "vue";
+import { useAppStore } from "@/stores/app";
+import { useAuthStore } from "@/stores/auth";
+import { useRouter } from "vue-router";
 
-const appStore = useAppStore()
-const authStore = useAuthStore()
-const router = useRouter()
+const appStore = useAppStore();
+const authStore = useAuthStore();
+const router = useRouter();
 
 const menuItems = computed(() => {
-  const routes = router.getRoutes().filter(r => r.path !== '' && r.meta?.title && r.meta?.showInNav !== false)
-  return routes.map(r => ({
-    title: r.meta.title as string || r.name as string,
-    to: r.path || '/',
+  const routes = router
+    .getRoutes()
+    .filter(
+      (r) => r.path !== "" && r.meta?.title && r.meta?.showInNav !== false,
+    );
+  return routes.map((r) => ({
+    title: (r.meta.title as string) || (r.name as string),
+    to: r.path || "/",
     value: r.name as string,
-    icon: getIcon(r.name as string)
-  }))
-})
+    icon: getIcon(r.name as string),
+  }));
+});
 
 const getIcon = (name: string) => {
   const iconMap: Record<string, string> = {
-    home: 'mdi-home',
-    about: 'mdi-information',
-    user: 'mdi-account',
-    settings: 'mdi-cog',
-    dashboard: 'mdi-view-dashboard'
-  }
-  return iconMap[name.toLowerCase()] || 'mdi-page-next'
-}
+    home: "mdi-home",
+    about: "mdi-information",
+    user: "mdi-account",
+    settings: "mdi-cog",
+    dashboard: "mdi-view-dashboard",
+  };
+  return iconMap[name.toLowerCase()] || "mdi-page-next";
+};
 
 const handleLogout = () => {
-  authStore.logout()
-  router.push('/login-index')
-}
+  authStore.logout();
+  router.push("/login-index");
+};
 
 const goHome = () => {
-  router.push('/index')
-}
+  router.push("/index");
+};
 </script>

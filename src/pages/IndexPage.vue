@@ -14,14 +14,14 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { useAppStore } from '@/stores/app'
-import { useTestApi } from '@/composables/useTestApi'
+import { onMounted } from "vue";
+import { useAppStore } from "@/stores/app";
+import { useTestApi } from "@/composables/useTestApi";
 
-const appStore = useAppStore()
-const { result, fetch } = useTestApi()
+const appStore = useAppStore();
+const { result, fetch } = useTestApi();
 
 onMounted(() => {
-  appStore.setBreadcrumbs([])
-})
+  appStore.setBreadcrumbs([]);
+});
 </script>

@@ -1,25 +1,24 @@
 # ResponseString
 
-
 ## Properties
 
-Name | Type | Description | Notes
------------- | ------------- | ------------- | -------------
-**success** | **boolean** |  | [optional] [default to undefined]
-**data** | **string** |  | [optional] [default to undefined]
-**messageCode** | **string** |  | [optional] [default to undefined]
-**messageArgs** | **Array&lt;string&gt;** |  | [optional] [default to undefined]
+| Name            | Type                    | Description | Notes                             |
+| --------------- | ----------------------- | ----------- | --------------------------------- |
+| **success**     | **boolean**             |             | [optional] [default to undefined] |
+| **data**        | **string**              |             | [optional] [default to undefined] |
+| **messageCode** | **string**              |             | [optional] [default to undefined] |
+| **messageArgs** | **Array&lt;string&gt;** |             | [optional] [default to undefined] |
 
 ## Example
 
 ```typescript
-import { ResponseString } from './api';
+import { ResponseString } from "./api";
 
 const instance: ResponseString = {
-    success,
-    data,
-    messageCode,
-    messageArgs,
+  success,
+  data,
+  messageCode,
+  messageArgs,
 };
 ```
 
