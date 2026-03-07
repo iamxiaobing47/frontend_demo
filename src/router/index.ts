@@ -4,6 +4,14 @@ import { useAuthStore } from "@/stores/auth";
 
 const modules = import.meta.glob("@/pages/**/*.vue", { eager: true });
 
+const titleMap: Record<string, string> = {
+  IndexPage: "首页",
+  ListPage: "一览",
+  FileUploadPage: "文件上传",
+  ProcessResultPage: "处理结果",
+  TemplateDownloadPage: "模板下载",
+};
+
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
@@ -41,7 +49,7 @@ for (const path in pagesDir) {
 
   let routePath = "/" + fileName.toLowerCase().replace("page", "");
   let routeName = fileName.toLowerCase().replace("page", "");
-  let metaTitle = fileName.replace("Page", "");
+  let metaTitle = titleMap[fileName] || fileName.replace("Page", "");
 
   if (fileName === "index") {
     routePath = "/index";
@@ -62,7 +70,7 @@ for (const path in pagesDir) {
     component,
     meta: {
       title: metaTitle,
-      showInNav: fileName !== "IndexPage",
+      showInNav: fileName !== "IndexPage" && fileName !== "ProcessResultPage",
       requiresAuth: true,
     },
   };
@@ -73,9 +81,14 @@ for (const path in pagesDir) {
 }
 
 routes[0].children!.sort((a, b) => {
-  if (a.path === "/index") return -1;
-  if (b.path === "/index") return 1;
-  return a.path.localeCompare(b.path);
+  const order: Record<string, number> = {
+    "/index": 0,
+    "/template-download": 1,
+    "/file-upload": 2,
+    "/list": 3,
+    "/process-result": 4,
+  };
+  return (order[a.path] ?? 99) - (order[b.path] ?? 99);
 });
 
 const router = createRouter({

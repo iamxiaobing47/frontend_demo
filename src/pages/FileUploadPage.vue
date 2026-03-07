@@ -4,26 +4,47 @@
     <v-card>
       <v-card-text>
         <v-file-input
+          v-model="file"
           label="选择文件"
           variant="outlined"
           prepend-icon="mdi-paperclip"
         />
-        <v-btn color="primary" class="mt-4"> 上传 </v-btn>
+        <v-btn
+          color="primary"
+          class="mt-4"
+          :loading="loading"
+          @click="handleUpload"
+        >
+          上传
+        </v-btn>
+        <v-alert v-if="error" type="error" variant="tonal" class="mt-4">
+          {{ error }}
+        </v-alert>
       </v-card-text>
     </v-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
-import { useAppStore } from "@/stores/app";
+import { ref } from "vue";
+import { useRouter } from "vue-router";
 
-const appStore = useAppStore();
+const router = useRouter();
+const file = ref<File[] | null>(null);
+const loading = ref(false);
+const error = ref("");
 
-onMounted(() => {
-  appStore.setBreadcrumbs([
-    { title: "首页", to: "/index" },
-    { title: "文件上传" },
-  ]);
-});
+const handleUpload = async () => {
+  if (!file.value?.length) {
+    error.value = "请选择文件";
+    return;
+  }
+  loading.value = true;
+  error.value = "";
+
+  setTimeout(() => {
+    loading.value = false;
+    router.push("/process-result");
+  }, 1000);
+};
 </script>

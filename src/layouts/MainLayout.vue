@@ -1,12 +1,12 @@
 <template>
   <v-app>
     <v-app-bar elevation="1" color="white">
-      <v-btn icon @click="goHome">
-        <v-icon>mdi-home</v-icon>
-      </v-btn>
       <v-app-bar-nav-icon @click="appStore.toggleDrawer" />
       <v-toolbar-title>Frontend Demo</v-toolbar-title>
       <v-spacer />
+      <v-btn icon @click="goHome">
+        <v-icon>mdi-home</v-icon>
+      </v-btn>
       <v-btn icon>
         <v-icon>mdi-bell</v-icon>
       </v-btn>
@@ -47,15 +47,6 @@
 
     <v-main>
       <v-container fluid class="pa-4">
-        <v-breadcrumbs
-          v-if="appStore.breadcrumbs.length"
-          :items="appStore.breadcrumbs"
-          class="pa-0 mb-4"
-        >
-          <template #divider>
-            <v-icon icon="mdi-chevron-right" />
-          </template>
-        </v-breadcrumbs>
         <router-view />
       </v-container>
     </v-main>
@@ -103,6 +94,7 @@ const handleLogout = () => {
 };
 
 const goHome = () => {
+  appStore.drawer = false;
   router.push("/index");
 };
 </script>
