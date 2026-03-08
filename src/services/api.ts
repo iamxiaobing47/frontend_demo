@@ -20,6 +20,7 @@ export interface ApiResponse<T = any> {
   data: T;
   messageCode?: string;
   messageArgs?: string[];
+  message?: string;
 }
 
 apiClient.interceptors.request.use(
