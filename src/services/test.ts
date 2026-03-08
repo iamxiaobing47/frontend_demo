@@ -7,10 +7,14 @@ import apiClient from "@/services/api";
 export const testApi = async () => {
   const response = await apiClient.get("/test");
   
+  console.log("Test API response:", response.data);
+  
   // 检查响应是否成功
   if (!response.data.success) {
     throw new Error(response.data.message || "请求失败");
   }
   
-  return response.data.data || "";
+  const resultData = response.data.data || "";
+  console.log("Test API returning:", resultData);
+  return resultData;
 };
