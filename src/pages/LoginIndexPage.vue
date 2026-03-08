@@ -39,10 +39,11 @@
         <v-card-text>
           <v-form @submit.prevent="handleLogin">
             <v-text-field
-              v-model="username"
-              label="用户名"
-              prepend-inner-icon="mdi-account"
+              v-model="email"
+              label="邮箱"
+              prepend-inner-icon="mdi-email"
               variant="outlined"
+              :error-messages="getFieldError('email')"
               class="mb-4"
             />
             <v-text-field
@@ -53,6 +54,7 @@
               :type="showPassword ? 'text' : 'password'"
               :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
               @click:append-inner="showPassword = !showPassword"
+              :error-messages="getFieldError('password')"
               class="mb-4"
             />
             <v-btn
@@ -72,26 +74,56 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { useValidation } from "@/composables/useValidation";
+import apiClient from "@/services/api";
 
 const router = useRouter();
 const authStore = useAuthStore();
+const { getFieldError, clearErrors, handleValidationResponse } = useValidation();
 
 const showLoginDialog = ref(false);
-const username = ref("");
+const email = ref("");
 const password = ref("");
 const showPassword = ref(false);
 const loading = ref(false);
 
+// 清除之前的错误
+onMounted(() => {
+  clearErrors();
+});
+
 const handleLogin = async () => {
+  clearErrors();
   loading.value = true;
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  await authStore.login(username.value, password.value);
-  loading.value = false;
-  showLoginDialog.value = false;
-  router.push("/");
+  
+  try {
+    const response = await apiClient.post("/auth/login", {
+      email: email.value,
+      password: password.value
+    });
+    
+    if (response.data.success) {
+      // 登录成功
+      await authStore.login(email.value, password.value);
+      loading.value = false;
+      showLoginDialog.value = false;
+      router.push("/");
+    } else {
+      // 处理验证错误
+      if (!handleValidationResponse(response.data)) {
+        // 其他类型的错误，这里可以显示通用错误消息
+        console.error("Login failed:", response.data.messageCode);
+      }
+      loading.value = false;
+    }
+  } catch (error) {
+    // 处理网络错误或其他异常
+    console.error("Login error:", error);
+    loading.value = false;
+  }
 };
 </script>
 

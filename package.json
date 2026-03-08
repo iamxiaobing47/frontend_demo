@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx --fix",
     "format": "prettier --write .",
-    "api:generate": "openapi-generator-cli generate -i ./openapi.json -g typescript-axios -o ./src/services/generated --additional-properties=modelPropertyNaming=camelCase"
+    "api:download": "curl -X GET \"http://localhost:8080/v3/api-docs\" -o openapi.json",
+    "api:generate": "openapi-generator-cli generate -i ./openapi.json -g typescript-axios -o ./src/services/generated --additional-properties=modelPropertyNaming=camelCase",
+    "api:regenerate": "npm run api:download && npm run api:generate"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
