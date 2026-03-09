@@ -1,33 +1,33 @@
-import { defineStore } from 'pinia'
+import { defineStore } from "pinia";
 
-export const useAppStore = defineStore('app', {
+export const useAppStore = defineStore("app", {
   state: () => ({
-    drawer: true,
+    navigation: true,
     loading: false,
     breadcrumbs: [] as Array<{ title: string; to?: string }>,
   }),
 
   getters: {
-    isDrawerOpen(): boolean {
-      return this.drawer
+    isNavigationOpen(): boolean {
+      return this.navigation;
     },
 
     isLoading(): boolean {
-      return this.loading
+      return this.loading;
     },
   },
 
   actions: {
-    toggleDrawer(): void {
-      this.drawer = !this.drawer
+    toggleNavigation(): void {
+      this.navigation = !this.navigation;
     },
 
     setLoading(value: boolean): void {
-      this.loading = value
+      this.loading = value;
     },
 
     setBreadcrumbs(items: Array<{ title: string; to?: string }>): void {
-      this.breadcrumbs = items
+      this.breadcrumbs = items;
     },
   },
-})
+});

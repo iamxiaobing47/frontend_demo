@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-app-bar elevation="1" color="white">
-      <v-app-bar-nav-icon @click="appStore.toggleDrawer" />
+      <v-app-bar-nav-icon @click="appStore.toggleNavigation" />
       <v-toolbar-title>Frontend Demo</v-toolbar-title>
       <v-spacer />
       <v-btn icon @click="goHome">
@@ -22,12 +22,16 @@
           <v-list-item prepend-icon="mdi-account" title="Profile" />
           <v-list-item prepend-icon="mdi-cog" title="Settings" />
           <v-divider />
-          <v-list-item prepend-icon="mdi-logout" title="Logout" @click="handleLogout" />
+          <v-list-item
+            prepend-icon="mdi-logout"
+            title="Logout"
+            @click="handleLogout"
+          />
         </v-list>
       </v-menu>
     </v-app-bar>
 
-    <v-navigation-drawer v-model="appStore.drawer" permanent>
+    <v-navigation-drawer v-model="appStore.navigation" permanent>
       <v-list density="compact" nav>
         <v-list-item
           v-for="item in menuItems"
@@ -50,45 +54,47 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useAppStore } from '@/stores/appStore'
-import { useAuthStore } from '@/stores/authStore'
-import { useRouter } from 'vue-router'
+import { computed } from "vue";
+import { useAppStore } from "@/stores/appStore";
+import { useAuthStore } from "@/stores/authStore";
+import { useRouter } from "vue-router";
 
-const appStore = useAppStore()
-const authStore = useAuthStore()
-const router = useRouter()
+const appStore = useAppStore();
+const authStore = useAuthStore();
+const router = useRouter();
 
 const menuItems = computed(() => {
   const routes = router
     .getRoutes()
-    .filter(r => r.path !== '' && r.meta?.title && r.meta?.showInNav !== false)
-  return routes.map(r => ({
+    .filter(
+      (r) => r.path !== "" && r.meta?.title && r.meta?.showInNav !== false,
+    );
+  return routes.map((r) => ({
     title: (r.meta.title as string) || (r.name as string),
-    to: r.path || '/',
+    to: r.path || "/",
     value: r.name as string,
     icon: getIcon(r.name as string),
-  }))
-})
+  }));
+});
 
 const getIcon = (name: string) => {
   const iconMap: Record<string, string> = {
-    home: 'mdi-home',
-    about: 'mdi-information',
-    user: 'mdi-account',
-    settings: 'mdi-cog',
-    dashboard: 'mdi-view-dashboard',
-  }
-  return iconMap[name.toLowerCase()] || 'mdi-page-next'
-}
+    home: "mdi-home",
+    about: "mdi-information",
+    user: "mdi-account",
+    settings: "mdi-cog",
+    dashboard: "mdi-view-dashboard",
+  };
+  return iconMap[name.toLowerCase()] || "mdi-page-next";
+};
 
-const handleLogout = () => {
-  authStore.logout()
-  router.push('/login')
-}
+const handleLogout = async () => {
+  await authStore.logout();
+  router.push("/login");
+};
 
 const goHome = () => {
-  appStore.drawer = false
-  router.push('/home')
-}
+  appStore.navigation = false;
+  router.push("/home");
+};
 </script>
