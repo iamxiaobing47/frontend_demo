@@ -3,25 +3,16 @@
     <v-app-bar color="white" elevation="1">
       <v-toolbar-title>Frontend Demo</v-toolbar-title>
       <v-spacer />
-      <v-btn color="primary" variant="flat" @click="showLoginDialog = true"
-        >登录</v-btn
-      >
+      <v-btn color="primary" variant="flat" @click="showLoginDialog = true">登录</v-btn>
     </v-app-bar>
 
     <v-main>
       <v-container fluid class="fill-height">
         <v-row align="center" justify="center">
           <v-col cols="12" class="text-center">
-            <v-icon
-              icon="mdi-rocket-launch"
-              size="100"
-              color="primary"
-              class="mb-6"
-            />
+            <v-icon icon="mdi-rocket-launch" size="100" color="primary" class="mb-6" />
             <h1 class="text-h3 mb-4">欢迎使用 Frontend Demo</h1>
-            <p class="text-h6 text-grey mb-8">
-              基于 Vue 3 + Vuetify + Pinia 的管理系统
-            </p>
+            <p class="text-h6 text-grey mb-8">基于 Vue 3 + Vuetify + Pinia 的管理系统</p>
             <v-btn color="primary" size="large" @click="showLoginDialog = true">
               <v-icon start>mdi-login</v-icon>
               立即登录
@@ -39,12 +30,7 @@
         <v-card-text>
           <v-form @submit.prevent="handleLogin">
             <!-- 错误消息显示 -->
-            <v-alert
-              v-if="errorMessage"
-              type="error"
-              variant="tonal"
-              class="mb-4"
-            >
+            <v-alert v-if="errorMessage" type="error" variant="tonal" class="mb-4">
               {{ errorMessage }}
             </v-alert>
 
@@ -67,13 +53,7 @@
               :error-messages="getFieldError('password')"
               class="mb-4"
             />
-            <v-btn
-              type="submit"
-              color="primary"
-              size="large"
-              block
-              :loading="loading"
-            >
+            <v-btn type="submit" color="primary" size="large" block :loading="loading">
               登录
             </v-btn>
           </v-form>
@@ -84,104 +64,71 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { useAuthStore } from "@/stores/authStore";
-import { useValidation } from "@/composables/useValidation";
-import { DefaultApi, LoginRequest } from "@/services/generated/api";
-import { getMessageTextWithDefault } from "@/utils/messageTexts";
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
+import { useValidation } from '@/composables/useValidation'
+import { getMessageTextWithDefault } from '@/utils/messageTexts'
 
-// 创建API实例
-const api = new DefaultApi();
+const router = useRouter()
+const authStore = useAuthStore()
+const { getFieldError, clearErrors, handleValidationResponse } = useValidation()
 
-const router = useRouter();
-const authStore = useAuthStore();
-const { getFieldError, clearErrors, handleValidationResponse } =
-  useValidation();
-
-const showLoginDialog = ref(false);
-const email = ref("");
-const password = ref("");
-const showPassword = ref(false);
-const loading = ref(false);
-const errorMessage = ref(""); // 添加错误消息状态
+const showLoginDialog = ref(false)
+const email = ref('')
+const password = ref('')
+const showPassword = ref(false)
+const loading = ref(false)
+const errorMessage = ref('') // 添加错误消息状态
 
 // 清除之前的错误
 onMounted(() => {
-  clearErrors();
-});
+  clearErrors()
+})
 
 const handleLogin = async () => {
-  clearErrors();
-  errorMessage.value = ""; // 清空之前错误消息
-  loading.value = true;
+  clearErrors()
+  errorMessage.value = '' // 清空之前错误消息
+  loading.value = true
 
   try {
-    const loginRequest: LoginRequest = {
-      email: email.value,
-      password: password.value,
-    };
+    // 直接使用authStore的登录方法，它会处理完整的登录流程
+    const loginResult = await authStore.login(email.value, password.value)
 
-    const response = await api.login(loginRequest);
-
-    if (response.data.success) {
-      // 登录成功 - 使用authStore的方法进行登录处理
-      const loginResult = await authStore.login(email.value, password.value);
-
-      if (loginResult.success) {
-        loading.value = false;
-        showLoginDialog.value = false;
-        router.push("/home");
-      } else {
-        // authStore.login内部可能也有错误，这里处理
-        errorMessage.value = loginResult.message || "登录失败，请检查您的凭据";
-        loading.value = false;
-      }
+    if (loginResult.success) {
+      loading.value = false
+      showLoginDialog.value = false
+      router.push('/home')
     } else {
-      // 处理验证错误
-      if (!handleValidationResponse(response.data)) {
-        // 其他类型的错误, 显示通用错误消息
-        console.error("Login failed:", response.data.messageCode);
-
-        // 显示错误消息而不是自动跳转
-        const messageCode = response.data.messageCode;
-        if (messageCode) {
-          errorMessage.value = getMessageTextWithDefault(
-            messageCode,
-            "登录失败，请检查您的凭据",
-          );
-        } else {
-          errorMessage.value = "登录失败，请检查您的凭据"; // 默认错误消息
-        }
-      }
-      loading.value = false;
+      // 处理登录失败
+      errorMessage.value = loginResult.message || '登录失败，请检查您的凭据'
+      loading.value = false
     }
   } catch (error: any) {
     // 处理网络错误或其他异常
-    console.error("Login error:", error);
+    console.error('Login error:', error)
 
     // 显示错误消息而不是自动跳转
     if (error.response) {
       // 服务器返回了错误响应
-      const messageCode = error.response.data?.messageCode;
+      const messageCode = error.response.data?.messageCode
       if (messageCode) {
         errorMessage.value =
-          error.response.data?.message ||
-          getMessageTextWithDefault(messageCode, "登录失败，请重试");
+          error.response.data?.message || getMessageTextWithDefault(messageCode, '登录失败，请重试')
       } else {
-        errorMessage.value = error.response.data?.message || "登录失败，请重试"; // 尝试使用服务器提供的消息
+        errorMessage.value = error.response.data?.message || '登录失败，请重试' // 尝试使用服务器提供的消息
       }
     } else if (error.request) {
       // 请求已发出但没有收到响应
-      errorMessage.value = "网络错误，请检查您的连接";
+      errorMessage.value = '网络错误，请检查您的连接'
     } else {
       // 其他错误
-      errorMessage.value = "发生未知错误，请重试";
+      errorMessage.value = '发生未知错误，请重试'
     }
 
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 </script>
 
 <style scoped>

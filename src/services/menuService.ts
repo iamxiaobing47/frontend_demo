@@ -1,4 +1,4 @@
-import apiClient from "./api";
+import { NavigationControllerApi } from "./generated/api";
 import { MenuItem } from "@/stores/menuStore";
 
 export interface ApiResponse<T = any> {
@@ -7,14 +7,21 @@ export interface ApiResponse<T = any> {
   message?: string;
 }
 
+const navigationApi = new NavigationControllerApi();
+
 export const menuService = {
   /**
    * 获取用户特定的菜单
    */
   getUserMenus: async (): Promise<ApiResponse<MenuItem[]>> => {
     try {
-      const response = await apiClient.get("/menus/user");
-      return response.data;
+      const response = await navigationApi.getUserNavigations();
+      // 将NavigationDto转换为MenuItem格式
+      return {
+        success: response.data.success || false,
+        data: response.data.data as MenuItem[], // 假设结构兼容
+        message: response.data.message,
+      };
     } catch (error) {
       console.error("Error fetching user menus:", error);
       throw error;
@@ -26,8 +33,12 @@ export const menuService = {
    */
   getAllMenus: async (): Promise<ApiResponse<MenuItem[]>> => {
     try {
-      const response = await apiClient.get("/menus/all");
-      return response.data;
+      const response = await navigationApi.getAllNavigations();
+      return {
+        success: response.data.success || false,
+        data: response.data.data as MenuItem[], // 假设结构兼容
+        message: response.data.message,
+      };
     } catch (error) {
       console.error("Error fetching all menus:", error);
       throw error;
@@ -42,13 +53,15 @@ export const menuService = {
     associatedId?: string,
   ): Promise<ApiResponse<MenuItem[]>> => {
     try {
-      const params: Record<string, string> = { userType };
-      if (associatedId) {
-        params.associatedId = associatedId;
-      }
-
-      const response = await apiClient.get("/menus/by-type", { params });
-      return response.data;
+      const response = await navigationApi.getNavigationsByType(
+        userType,
+        associatedId,
+      );
+      return {
+        success: response.data.success || false,
+        data: response.data.data as MenuItem[], // 假设结构兼容
+        message: response.data.message,
+      };
     } catch (error) {
       console.error("Error fetching menus by user type:", error);
       throw error;

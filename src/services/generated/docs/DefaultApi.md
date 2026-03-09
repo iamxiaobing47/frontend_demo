@@ -5,6 +5,7 @@ All URIs are relative to *http://localhost:8080*
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
 |[**createTestUser**](#createtestuser) | **POST** /api/auth/create-test-user | 创建测试用户|
+|[**getCurrentUser**](#getcurrentuser) | **GET** /api/auth/user | 获取当前用户信息|
 |[**login**](#login) | **POST** /api/auth/login | 用户登录|
 |[**logout**](#logout) | **POST** /api/auth/logout | 用户登出|
 |[**refreshToken**](#refreshtoken) | **POST** /api/auth/refresh | 刷新Token|
@@ -52,6 +53,50 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: application/json
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getCurrentUser**
+> ResponseUserInfoDto getCurrentUser()
+
+获取当前登录用户的基本信息
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+const { status, data } = await apiInstance.getCurrentUser();
+```
+
+### Parameters
+This endpoint does not have any parameters.
+
+
+### Return type
+
+**ResponseUserInfoDto**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: */*
 
 

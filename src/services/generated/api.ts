@@ -77,12 +77,26 @@ export interface ResponseString {
     'messageArgs'?: Array<string>;
     'message'?: string;
 }
+export interface ResponseUserInfoDto {
+    'success'?: boolean;
+    'data'?: UserInfoDto;
+    'messageCode'?: string;
+    'messageArgs'?: Array<string>;
+    'message'?: string;
+}
 export interface ResponseVoid {
     'success'?: boolean;
     'data'?: object;
     'messageCode'?: string;
     'messageArgs'?: Array<string>;
     'message'?: string;
+}
+export interface UserInfoDto {
+    'email'?: string;
+    'username'?: string;
+    'role'?: string;
+    'businessOwnerId'?: string;
+    'locationId'?: string;
 }
 
 /**
@@ -119,6 +133,36 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(createTestUserRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 获取当前登录用户的基本信息
+         * @summary 获取当前用户信息
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getCurrentUser: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/auth/user`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -278,6 +322,18 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * 获取当前登录用户的基本信息
+         * @summary 获取当前用户信息
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getCurrentUser(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseUserInfoDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getCurrentUser(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.getCurrentUser']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * 使用邮箱和密码登录
          * @summary 用户登录
          * @param {LoginRequest} loginRequest 
@@ -347,6 +403,15 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.createTestUser(createTestUserRequest, options).then((request) => request(axios, basePath));
         },
         /**
+         * 获取当前登录用户的基本信息
+         * @summary 获取当前用户信息
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getCurrentUser(options?: RawAxiosRequestConfig): AxiosPromise<ResponseUserInfoDto> {
+            return localVarFp.getCurrentUser(options).then((request) => request(axios, basePath));
+        },
+        /**
          * 使用邮箱和密码登录
          * @summary 用户登录
          * @param {LoginRequest} loginRequest 
@@ -400,6 +465,16 @@ export class DefaultApi extends BaseAPI {
      */
     public createTestUser(createTestUserRequest: CreateTestUserRequest, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).createTestUser(createTestUserRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 获取当前登录用户的基本信息
+     * @summary 获取当前用户信息
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public getCurrentUser(options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).getCurrentUser(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

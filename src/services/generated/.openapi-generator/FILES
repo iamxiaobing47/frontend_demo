@@ -14,6 +14,8 @@ docs/RefreshTokenRequest.md
 docs/ResponseListNavigationDto.md
 docs/ResponseLoginResponse.md
 docs/ResponseString.md
+docs/ResponseUserInfoDto.md
 docs/ResponseVoid.md
+docs/UserInfoDto.md
 git_push.sh
 index.ts
