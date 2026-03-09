@@ -1,10 +1,10 @@
-import apiClient from '@/services/api'
+import apiClient from '@/services/httpClient'
+import { DefaultApi } from '@/services/generated/api'
 
-// 由于生成的 API 可能不包含我们的拦截器，
-// 我们直接使用我们的 apiClient
-
+// 使用生成的 API 类，但传入自定义的 httpClient
 export const testApi = async () => {
-  const response = await apiClient.get('/test')
+  const api = new DefaultApi(undefined, '', apiClient)
+  const response = await api.test()
 
   // 检查响应是否成功
   if (!response.data.success) {

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
-import apiClient from '@/services/api'
+import apiClient from '@/services/httpClient'
+import { DefaultApi } from '@/services/generated/api'
 import { useMenuStore } from '@/stores/menuStore'
 
 interface UserInfo {
@@ -32,7 +33,10 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async login(email: string, password: string): Promise<{ success: boolean; message?: string }> {
       try {
-        const response = await apiClient.post('/auth/login', {
+        // 使用生成的 API 类，但传入自定义的 httpClient
+        // 传入空字符串作为 basePath，让请求使用相对路径（通过 Vite 代理）
+        const api = new DefaultApi(undefined, '', apiClient)
+        const response = await api.login({
           email,
           password,
         })
@@ -92,8 +96,10 @@ export const useAuthStore = defineStore('auth', {
 
     async logout(): Promise<void> {
       try {
-        // 调用后端登出接口
-        await apiClient.post('/auth/logout')
+        // 使用生成的 API 类，但传入自定义的 httpClient
+        // 传入空字符串作为 basePath，让请求使用相对路径（通过 Vite 代理）
+        const api = new DefaultApi(undefined, '', apiClient)
+        await api.logout()
       } catch (error) {
         console.error('Logout failed:', error)
       } finally {
@@ -150,15 +156,17 @@ export const useAuthStore = defineStore('auth', {
 
     async fetchCurrentUser(): Promise<UserInfo> {
       try {
-        // 调用用户信息接口
-        const response = await apiClient.get('/auth/user')
+        // 使用生成的 API 类，但传入自定义的 httpClient
+        // 传入空字符串作为 basePath，让请求使用相对路径（通过 Vite 代理）
+        const api = new DefaultApi(undefined, '', apiClient)
+        const response = await api.getCurrentUser()
 
         if (response.data.success && response.data.data) {
           const userData = response.data.data
           return {
-            username: userData.username,
-            email: userData.email,
-            role: userData.role as 'employee' | 'business_owner',
+            username: userData.username || '',
+            email: userData.email || '',
+            role: (userData.role as 'employee' | 'business_owner') || 'employee',
             businessOwnerId: userData.businessOwnerId,
             locationId: userData.locationId,
           }

@@ -1,4 +1,5 @@
-import apiClient from '@/services/api'
+import apiClient from '@/services/httpClient'
+import { NavigationControllerApi } from '@/services/generated/api'
 import { MenuItem } from '@/stores/menuStore'
 
 export interface ApiResponse<T = any> {
@@ -13,7 +14,10 @@ export const menuService = {
    */
   getUserMenus: async (): Promise<ApiResponse<MenuItem[]>> => {
     try {
-      const response = await apiClient.get('/navigations/user')
+      // 使用生成的 API 类，但传入自定义的 httpClient
+      // 传入空字符串作为 basePath，让请求使用相对路径（通过 Vite 代理）
+      const api = new NavigationControllerApi(undefined, '', apiClient)
+      const response = await api.getUserNavigations()
       // 将NavigationDto转换为MenuItem格式
       return {
         success: response.data.success || false,
@@ -31,7 +35,10 @@ export const menuService = {
    */
   getAllMenus: async (): Promise<ApiResponse<MenuItem[]>> => {
     try {
-      const response = await apiClient.get('/navigations/all')
+      // 使用生成的 API 类，但传入自定义的 httpClient
+      // 传入空字符串作为 basePath，让请求使用相对路径（通过 Vite 代理）
+      const api = new NavigationControllerApi(undefined, '', apiClient)
+      const response = await api.getAllNavigations()
       return {
         success: response.data.success || false,
         data: response.data.data as MenuItem[], // 假设结构兼容
@@ -51,11 +58,10 @@ export const menuService = {
     associatedId?: string
   ): Promise<ApiResponse<MenuItem[]>> => {
     try {
-      const params: Record<string, string> = { userType }
-      if (associatedId) {
-        params.associatedId = associatedId
-      }
-      const response = await apiClient.get('/navigations/by-type', { params })
+      // 使用生成的 API 类，但传入自定义的 httpClient
+      // 传入空字符串作为 basePath，让请求使用相对路径（通过 Vite 代理）
+      const api = new NavigationControllerApi(undefined, '', apiClient)
+      const response = await api.getNavigationsByType(userType, associatedId)
       return {
         success: response.data.success || false,
         data: response.data.data as MenuItem[], // 假设结构兼容
