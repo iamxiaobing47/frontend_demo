@@ -41,56 +41,39 @@ export const useAuthStore = defineStore('auth', {
           password,
         })
 
-        if (response.data.success && response.data.data?.accessToken) {
-          const loginData = response.data.data
-          const accessToken = loginData.accessToken
+        // 由于 httpClient 已经处理了错误，这里只处理成功情况
+        // response.data.data 不会是 undefined，因为错误情况已经被 httpClient 拦截
+        const loginData = response.data.data!
+        const accessToken = loginData.accessToken
 
-          // 存储accessToken到localStorage
-          this.token = accessToken || null
-          localStorage.setItem('accessToken', accessToken || '')
+        // 存储accessToken到localStorage
+        this.token = accessToken || null
+        localStorage.setItem('accessToken', accessToken || '')
 
-          // 获取完整的用户信息
-          const user = await this.fetchCurrentUser()
-          this.userInfo = user
-          localStorage.setItem('userInfo', JSON.stringify(user))
+        // 获取完整的用户信息
+        const user = await this.fetchCurrentUser()
+        this.userInfo = user
+        localStorage.setItem('userInfo', JSON.stringify(user))
 
-          // Set user role in menu store and fetch user-specific menus
-          const menuStore = useMenuStore()
-          menuStore.setUserRole(
-            user.role as 'employee' | 'business_owner',
-            user.businessOwnerId,
-            user.locationId
-          )
+        // Set user role in menu store and fetch user-specific menus
+        const menuStore = useMenuStore()
+        menuStore.setUserRole(
+          user.role as 'employee' | 'business_owner',
+          user.businessOwnerId,
+          user.locationId
+        )
 
-          // Fetch user-specific menus after successful login
-          await menuStore.fetchUserMenus()
+        // Fetch user-specific menus after successful login
+        await menuStore.fetchUserMenus()
 
-          // Update router with user-specific routes
-          const { generateRoutesFromMenus } = await import('@/router')
-          generateRoutesFromMenus(menuStore.menus)
+        // Update router with user-specific routes
+        const { generateRoutesFromMenus } = await import('@/router')
+        generateRoutesFromMenus(menuStore.menus)
 
-          return { success: true }
-        }
-
-        // 如果响应中有错误消息，则返回该消息
-        if (response.data.messageCode) {
-          return { success: false, message: response.data.messageCode }
-        } else {
-          return { success: false, message: '登录失败' }
-        }
+        return { success: true }
       } catch (error: any) {
-        console.error('Login failed:', error)
-
-        // 处理网络错误或其他异常
-        if (error.response?.data?.message) {
-          return { success: false, message: error.response.data.message }
-        } else if (error.response?.data?.messageCode) {
-          return { success: false, message: error.response.data.messageCode }
-        } else if (error.code === 'NETWORK_ERROR') {
-          return { success: false, message: '网络连接错误' }
-        } else {
-          return { success: false, message: '登录失败，请稍后重试' }
-        }
+        // 错误已经在 httpClient 中处理并显示，这里只返回失败状态
+        return { success: false, message: '登录失败' }
       }
     },
 

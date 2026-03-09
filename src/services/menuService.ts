@@ -20,12 +20,12 @@ export const menuService = {
       const response = await api.getUserNavigations()
       // 将NavigationDto转换为MenuItem格式
       return {
-        success: response.data.success || false,
+        success: true,
         data: response.data.data as MenuItem[], // 假设结构兼容
         message: response.data.message,
       }
     } catch (error) {
-      console.error('Error fetching user menus:', error)
+      // 错误已经在 httpClient 中处理并显示
       throw error
     }
   },
@@ -40,12 +40,12 @@ export const menuService = {
       const api = new NavigationControllerApi(undefined, '', apiClient)
       const response = await api.getAllNavigations()
       return {
-        success: response.data.success || false,
+        success: true,
         data: response.data.data as MenuItem[], // 假设结构兼容
         message: response.data.message,
       }
     } catch (error) {
-      console.error('Error fetching all menus:', error)
+      // 错误已经在 httpClient 中处理并显示
       throw error
     }
   },
@@ -63,12 +63,12 @@ export const menuService = {
       const api = new NavigationControllerApi(undefined, '', apiClient)
       const response = await api.getNavigationsByType(userType, associatedId)
       return {
-        success: response.data.success || false,
+        success: true,
         data: response.data.data as MenuItem[], // 假设结构兼容
         message: response.data.message,
       }
     } catch (error) {
-      console.error('Error fetching menus by user type:', error)
+      // 错误已经在 httpClient 中处理并显示
       throw error
     }
   },

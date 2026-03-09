@@ -100,32 +100,11 @@ const handleLogin = async () => {
       showLoginDialog.value = false
       router.push('/home')
     } else {
-      // 处理登录失败
-      errorMessage.value = loginResult.message || '登录失败，请检查您的凭据'
+      // 错误已经在 httpClient 中显示，这里可以清空本地错误消息
       loading.value = false
     }
   } catch (error: any) {
-    // 处理网络错误或其他异常
-    console.error('Login error:', error)
-
-    // 显示错误消息而不是自动跳转
-    if (error.response) {
-      // 服务器返回了错误响应
-      const messageCode = error.response.data?.messageCode
-      if (messageCode) {
-        errorMessage.value =
-          error.response.data?.message || getMessageTextWithDefault(messageCode, '登录失败，请重试')
-      } else {
-        errorMessage.value = error.response.data?.message || '登录失败，请重试' // 尝试使用服务器提供的消息
-      }
-    } else if (error.request) {
-      // 请求已发出但没有收到响应
-      errorMessage.value = '网络错误，请检查您的连接'
-    } else {
-      // 其他错误
-      errorMessage.value = '发生未知错误，请重试'
-    }
-
+    // 错误已经在 httpClient 中处理并显示，这里只处理加载状态
     loading.value = false
   }
 }
