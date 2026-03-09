@@ -35,29 +35,54 @@ export interface LoginResponse {
     'accessToken'?: string;
     'refreshToken'?: string;
     'username'?: string;
+    'role'?: string;
+    'businessOwnerId'?: string;
+    'locationId'?: string;
     'expiresIn'?: number;
     'refreshExpiresIn'?: number;
 }
+export interface NavigationDto {
+    'navigationId'?: number;
+    'name'?: string;
+    'path'?: string;
+    'icon'?: string;
+    'sortOrder'?: number;
+    'parentId'?: number;
+    'enabled'?: boolean;
+    'userType'?: string;
+    'createdAt'?: string;
+    'updatedAt'?: string;
+}
 export interface RefreshTokenRequest {
     'refreshToken': string;
+}
+export interface ResponseListNavigationDto {
+    'success'?: boolean;
+    'data'?: Array<NavigationDto>;
+    'messageCode'?: string;
+    'messageArgs'?: Array<string>;
+    'message'?: string;
 }
 export interface ResponseLoginResponse {
     'success'?: boolean;
     'data'?: LoginResponse;
     'messageCode'?: string;
     'messageArgs'?: Array<string>;
+    'message'?: string;
 }
 export interface ResponseString {
     'success'?: boolean;
     'data'?: string;
     'messageCode'?: string;
     'messageArgs'?: Array<string>;
+    'message'?: string;
 }
 export interface ResponseVoid {
     'success'?: boolean;
     'data'?: object;
     'messageCode'?: string;
     'messageArgs'?: Array<string>;
+    'message'?: string;
 }
 
 /**
@@ -207,7 +232,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @throws {RequiredError}
          */
         test: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/test`;
+            const localVarPath = `/api/test`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -417,6 +442,228 @@ export class DefaultApi extends BaseAPI {
      */
     public test(options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).test(options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * NavigationControllerApi - axios parameter creator
+ */
+export const NavigationControllerApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAllNavigations: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/navigations/all`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} userType 
+         * @param {string} [associatedId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getNavigationsByType: async (userType: string, associatedId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'userType' is not null or undefined
+            assertParamExists('getNavigationsByType', 'userType', userType)
+            const localVarPath = `/api/navigations/by-type`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (userType !== undefined) {
+                localVarQueryParameter['userType'] = userType;
+            }
+
+            if (associatedId !== undefined) {
+                localVarQueryParameter['associatedId'] = associatedId;
+            }
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUserNavigations: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/navigations/user`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * NavigationControllerApi - functional programming interface
+ */
+export const NavigationControllerApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = NavigationControllerApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getAllNavigations(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseListNavigationDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllNavigations(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['NavigationControllerApi.getAllNavigations']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} userType 
+         * @param {string} [associatedId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getNavigationsByType(userType: string, associatedId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseListNavigationDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getNavigationsByType(userType, associatedId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['NavigationControllerApi.getNavigationsByType']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getUserNavigations(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseListNavigationDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getUserNavigations(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['NavigationControllerApi.getUserNavigations']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * NavigationControllerApi - factory interface
+ */
+export const NavigationControllerApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = NavigationControllerApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAllNavigations(options?: RawAxiosRequestConfig): AxiosPromise<ResponseListNavigationDto> {
+            return localVarFp.getAllNavigations(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} userType 
+         * @param {string} [associatedId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getNavigationsByType(userType: string, associatedId?: string, options?: RawAxiosRequestConfig): AxiosPromise<ResponseListNavigationDto> {
+            return localVarFp.getNavigationsByType(userType, associatedId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUserNavigations(options?: RawAxiosRequestConfig): AxiosPromise<ResponseListNavigationDto> {
+            return localVarFp.getUserNavigations(options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * NavigationControllerApi - object-oriented interface
+ */
+export class NavigationControllerApi extends BaseAPI {
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public getAllNavigations(options?: RawAxiosRequestConfig) {
+        return NavigationControllerApiFp(this.configuration).getAllNavigations(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} userType 
+     * @param {string} [associatedId] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public getNavigationsByType(userType: string, associatedId?: string, options?: RawAxiosRequestConfig) {
+        return NavigationControllerApiFp(this.configuration).getNavigationsByType(userType, associatedId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public getUserNavigations(options?: RawAxiosRequestConfig) {
+        return NavigationControllerApiFp(this.configuration).getUserNavigations(options).then((request) => request(this.axios, this.basePath));
     }
 }
 

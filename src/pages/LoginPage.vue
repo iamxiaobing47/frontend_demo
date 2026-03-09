@@ -38,6 +38,16 @@
         </v-card-title>
         <v-card-text>
           <v-form @submit.prevent="handleLogin">
+            <!-- 错误消息显示 -->
+            <v-alert
+              v-if="errorMessage"
+              type="error"
+              variant="tonal"
+              class="mb-4"
+            >
+              {{ errorMessage }}
+            </v-alert>
+
             <v-text-field
               v-model="email"
               label="邮箱"
@@ -78,7 +88,11 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useValidation } from "@/composables/useValidation";
-import apiClient from "@/services/api";
+import { DefaultApi, LoginRequest } from "@/services/generated/api";
+import { getMessageTextWithDefault } from "@/utils/messageTexts";
+
+// 创建API实例
+const api = new DefaultApi();
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -90,6 +104,7 @@ const email = ref("");
 const password = ref("");
 const showPassword = ref(false);
 const loading = ref(false);
+const errorMessage = ref(""); // 添加错误消息状态
 
 // 清除之前的错误
 onMounted(() => {
@@ -98,31 +113,72 @@ onMounted(() => {
 
 const handleLogin = async () => {
   clearErrors();
+  errorMessage.value = ""; // 清空之前错误消息
   loading.value = true;
 
   try {
-    const response = await apiClient.post("/auth/login", {
+    const loginRequest: LoginRequest = {
       email: email.value,
       password: password.value,
-    });
+    };
+
+    const response = await api.login(loginRequest);
 
     if (response.data.success) {
-      // 登录成功
-      await authStore.login(email.value, password.value);
-      loading.value = false;
-      showLoginDialog.value = false;
-      router.push("/home");
+      // 登录成功 - 使用authStore的方法进行登录处理
+      const loginResult = await authStore.login(email.value, password.value);
+
+      if (loginResult.success) {
+        loading.value = false;
+        showLoginDialog.value = false;
+        router.push("/home");
+      } else {
+        // authStore.login内部可能也有错误，这里处理
+        errorMessage.value = loginResult.message || "登录失败，请检查您的凭据";
+        loading.value = false;
+      }
     } else {
       // 处理验证错误
       if (!handleValidationResponse(response.data)) {
         // 其他类型的错误, 显示通用错误消息
         console.error("Login failed:", response.data.messageCode);
+
+        // 显示错误消息而不是自动跳转
+        const messageCode = response.data.messageCode;
+        if (messageCode) {
+          errorMessage.value = getMessageTextWithDefault(
+            messageCode,
+            "登录失败，请检查您的凭据",
+          );
+        } else {
+          errorMessage.value = "登录失败，请检查您的凭据"; // 默认错误消息
+        }
       }
       loading.value = false;
     }
-  } catch (error) {
-    // 网络错误等由axios拦截器处理, 这里只需要记录错误
+  } catch (error: any) {
+    // 处理网络错误或其他异常
     console.error("Login error:", error);
+
+    // 显示错误消息而不是自动跳转
+    if (error.response) {
+      // 服务器返回了错误响应
+      const messageCode = error.response.data?.messageCode;
+      if (messageCode) {
+        errorMessage.value =
+          error.response.data?.message ||
+          getMessageTextWithDefault(messageCode, "登录失败，请重试");
+      } else {
+        errorMessage.value = error.response.data?.message || "登录失败，请重试"; // 尝试使用服务器提供的消息
+      }
+    } else if (error.request) {
+      // 请求已发出但没有收到响应
+      errorMessage.value = "网络错误，请检查您的连接";
+    } else {
+      // 其他错误
+      errorMessage.value = "发生未知错误，请重试";
+    }
+
     loading.value = false;
   }
 };

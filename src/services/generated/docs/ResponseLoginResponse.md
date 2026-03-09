@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **data** | [**LoginResponse**](LoginResponse.md) |  | [optional] [default to undefined]
 **messageCode** | **string** |  | [optional] [default to undefined]
 **messageArgs** | **Array&lt;string&gt;** |  | [optional] [default to undefined]
+**message** | **string** |  | [optional] [default to undefined]
 
 ## Example
 
@@ -20,6 +21,7 @@ const instance: ResponseLoginResponse = {
     data,
     messageCode,
     messageArgs,
+    message,
 };
 ```
 

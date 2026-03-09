@@ -8,7 +8,10 @@ docs/CreateTestUserRequest.md
 docs/DefaultApi.md
 docs/LoginRequest.md
 docs/LoginResponse.md
+docs/NavigationControllerApi.md
+docs/NavigationDto.md
 docs/RefreshTokenRequest.md
+docs/ResponseListNavigationDto.md
 docs/ResponseLoginResponse.md
 docs/ResponseString.md
 docs/ResponseVoid.md

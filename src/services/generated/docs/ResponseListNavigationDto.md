@@ -1,4 +1,4 @@
-# ResponseVoid
+# ResponseListNavigationDto
 
 
 ## Properties
@@ -6,7 +6,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **success** | **boolean** |  | [optional] [default to undefined]
-**data** | **object** |  | [optional] [default to undefined]
+**data** | [**Array&lt;NavigationDto&gt;**](NavigationDto.md) |  | [optional] [default to undefined]
 **messageCode** | **string** |  | [optional] [default to undefined]
 **messageArgs** | **Array&lt;string&gt;** |  | [optional] [default to undefined]
 **message** | **string** |  | [optional] [default to undefined]
@@ -14,9 +14,9 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { ResponseVoid } from './api';
+import { ResponseListNavigationDto } from './api';
 
-const instance: ResponseVoid = {
+const instance: ResponseListNavigationDto = {
     success,
     data,
     messageCode,

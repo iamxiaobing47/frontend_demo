@@ -8,7 +8,7 @@ All URIs are relative to *http://localhost:8080*
 |[**login**](#login) | **POST** /api/auth/login | 用户登录|
 |[**logout**](#logout) | **POST** /api/auth/logout | 用户登出|
 |[**refreshToken**](#refreshtoken) | **POST** /api/auth/refresh | 刷新Token|
-|[**test**](#test) | **GET** /test | 测试接口|
+|[**test**](#test) | **GET** /api/test | 测试接口|
 
 # **createTestUser**
 > ResponseVoid createTestUser(createTestUserRequest)
