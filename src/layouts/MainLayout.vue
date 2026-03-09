@@ -33,15 +33,48 @@
 
     <v-navigation-drawer v-model="appStore.navigation" permanent>
       <v-list density="compact" nav>
-        <v-list-item
-          v-for="item in menuItems"
-          :key="item.title"
-          :to="item.to"
-          :prepend-icon="item.icon"
-          :title="item.title"
-          :value="item.value"
-          color="primary"
-        />
+        <!-- Show loading indicator while menus are being fetched -->
+        <v-list-item v-if="menuStore.loading">
+          <v-list-item-title>
+            <v-progress-linear indeterminate></v-progress-linear>
+          </v-list-item-title>
+        </v-list-item>
+
+        <!-- Show message if no menus are available -->
+        <v-list-item v-else-if="menuItems.length === 0 && !menuStore.loading">
+          <v-list-item-title class="text-grey"> 无可用菜单 </v-list-item-title>
+        </v-list-item>
+
+        <!-- Render the menu items -->
+        <template v-else v-for="item in menuItems" :key="item.id">
+          <v-list-item
+            v-if="!item.children || item.children.length === 0"
+            :to="item.path"
+            :prepend-icon="item.icon || getIcon(item.id)"
+            :title="item.title"
+            :value="item.id"
+            color="primary"
+          />
+          <v-list-group v-else>
+            <template #activator="{ props }">
+              <v-list-item
+                v-bind="props"
+                :prepend-icon="item.icon || getIcon(item.id)"
+                :title="item.title"
+              />
+            </template>
+            <v-list-item
+              v-for="child in item.children"
+              :key="child.id"
+              :to="child.path"
+              :prepend-icon="child.icon || getIcon(child.id)"
+              :title="child.title"
+              :value="child.id"
+              color="primary"
+              style="padding-left: 40px"
+            />
+          </v-list-group>
+        </template>
       </v-list>
     </v-navigation-drawer>
 
@@ -57,35 +90,32 @@
 import { computed } from "vue";
 import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
+import { useMenuStore } from "@/stores/menuStore";
 import { useRouter } from "vue-router";
 
 const appStore = useAppStore();
 const authStore = useAuthStore();
+const menuStore = useMenuStore();
 const router = useRouter();
 
+// Use dynamic menu from store instead of router-based menu
 const menuItems = computed(() => {
-  const routes = router
-    .getRoutes()
-    .filter(
-      (r) => r.path !== "" && r.meta?.title && r.meta?.showInNav !== false,
-    );
-  return routes.map((r) => ({
-    title: (r.meta.title as string) || (r.name as string),
-    to: r.path || "/",
-    value: r.name as string,
-    icon: getIcon(r.name as string),
-  }));
+  return menuStore.getUserMenus;
 });
 
-const getIcon = (name: string) => {
+const getIcon = (id: string) => {
   const iconMap: Record<string, string> = {
     home: "mdi-home",
     about: "mdi-information",
     user: "mdi-account",
     settings: "mdi-cog",
     dashboard: "mdi-view-dashboard",
+    projectlist: "mdi-folder-multiple",
+    template: "mdi-download",
+    upload: "mdi-upload",
+    result: "mdi-file-document",
   };
-  return iconMap[name.toLowerCase()] || "mdi-page-next";
+  return iconMap[id.toLowerCase()] || "mdi-page-next";
 };
 
 const handleLogout = async () => {

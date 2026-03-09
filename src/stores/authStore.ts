@@ -1,132 +1,159 @@
-import { defineStore } from 'pinia'
-import apiClient from '@/services/api'
+import { defineStore } from "pinia";
+import apiClient from "@/services/api";
+import { useMenuStore } from "@/stores/menuStore";
 
 interface UserInfo {
-  username: string
-  email: string
+  username: string;
+  email: string;
+  role: "employee" | "business_owner";
+  businessOwnerId?: string;
+  locationId?: string;
 }
 
-export const useAuthStore = defineStore('auth', {
+export const useAuthStore = defineStore("auth", {
   state: () => ({
     // 清理可能的旧 token
     token: (() => {
-      if (localStorage.getItem('mocktoken')) {
-        localStorage.removeItem('mocktoken')
+      if (localStorage.getItem("mocktoken")) {
+        localStorage.removeItem("mocktoken");
       }
-      return localStorage.getItem('accessToken') || null
+      return localStorage.getItem("accessToken") || null;
     })(),
-    userInfo: JSON.parse(localStorage.getItem('userInfo') || 'null') as UserInfo | null,
+    userInfo: JSON.parse(
+      localStorage.getItem("userInfo") || "null",
+    ) as UserInfo | null,
     isRefreshing: false,
   }),
 
   getters: {
     isAuthenticated(): boolean {
-      return !!this.token
+      return !!this.token;
     },
   },
 
   actions: {
     async login(email: string, password: string): Promise<boolean> {
       try {
-        const response = await apiClient.post('/auth/login', {
+        const response = await apiClient.post("/auth/login", {
           email,
           password,
-        })
+        });
 
         if (response.data.success && response.data.data?.accessToken) {
-          const accessToken = response.data.data.accessToken
-          const username = response.data.data.username
+          const loginData = response.data.data;
+          const accessToken = loginData.accessToken;
+          const username = loginData.username;
+          const userRole = loginData.role || "employee"; // Default to employee if not provided
+          const businessOwnerId = loginData.businessOwnerId;
+          const locationId = loginData.locationId;
 
           // 存储accessToken到localStorage
-          this.token = accessToken
-          localStorage.setItem('accessToken', accessToken)
+          this.token = accessToken;
+          localStorage.setItem("accessToken", accessToken);
 
           // 存储用户信息到localStorage
-          const user: UserInfo = { username, email }
-          this.userInfo = user
-          localStorage.setItem('userInfo', JSON.stringify(user))
+          const user: UserInfo = {
+            username,
+            email,
+            role: userRole,
+            businessOwnerId,
+            locationId,
+          };
+          this.userInfo = user;
+          localStorage.setItem("userInfo", JSON.stringify(user));
 
-          return true
+          // Set user role in menu store and fetch user-specific menus
+          const menuStore = useMenuStore();
+          menuStore.setUserRole(userRole, businessOwnerId, locationId);
+
+          // Fetch user-specific menus after successful login
+          await menuStore.fetchUserMenus();
+
+          // Update router with user-specific routes
+          const { generateRoutesFromMenus } = await import("@/router");
+          generateRoutesFromMenus(menuStore.menus);
+
+          return true;
         }
-        return false
+        return false;
       } catch (error) {
-        console.error('Login failed:', error)
-        return false
+        console.error("Login failed:", error);
+        return false;
       }
     },
 
     async logout(): Promise<void> {
       try {
         // 调用后端登出接口
-        await apiClient.post('/auth/logout')
+        await apiClient.post("/auth/logout");
       } catch (error) {
-        console.error('Logout failed:', error)
+        console.error("Logout failed:", error);
       } finally {
         // 清除本地存储
-        this.token = null
-        this.userInfo = null
-        localStorage.removeItem('accessToken')
-        localStorage.removeItem('userInfo')
+        this.token = null;
+        this.userInfo = null;
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("userInfo");
       }
     },
 
     async refreshToken(): Promise<boolean> {
       if (this.isRefreshing) {
         // 如果已经在刷新，等待完成
-        return new Promise<boolean>(resolve => {
+        return new Promise<boolean>((resolve) => {
           const checkRefresh = () => {
             if (!this.isRefreshing) {
-              resolve(!!this.token)
+              resolve(!!this.token);
             } else {
-              setTimeout(checkRefresh, 100)
+              setTimeout(checkRefresh, 100);
             }
-          }
-          checkRefresh()
-        })
+          };
+          checkRefresh();
+        });
       }
 
-      this.isRefreshing = true
+      this.isRefreshing = true;
       try {
         // 从cookie中获取refreshToken（浏览器自动处理）
-        const response = await apiClient.post('/auth/refresh', {})
+        const response = await apiClient.post("/auth/refresh", {});
 
         if (response.data.success && response.data.data?.accessToken) {
-          const accessToken = response.data.data.accessToken
-          const username = response.data.data.username
+          const accessToken = response.data.data.accessToken;
+          const username = response.data.data.username;
 
           // 更新accessToken
-          this.token = accessToken
-          localStorage.setItem('accessToken', accessToken)
+          this.token = accessToken;
+          localStorage.setItem("accessToken", accessToken);
 
           // 更新用户信息（如果需要）
           if (this.userInfo) {
-            const updatedUser: UserInfo = { ...this.userInfo, username }
-            this.userInfo = updatedUser
-            localStorage.setItem('userInfo', JSON.stringify(updatedUser))
+            const updatedUser: UserInfo = { ...this.userInfo, username };
+            this.userInfo = updatedUser;
+            localStorage.setItem("userInfo", JSON.stringify(updatedUser));
           }
 
-          this.isRefreshing = false
-          return true
+          this.isRefreshing = false;
+          return true;
         }
-        this.isRefreshing = false
-        return false
+        this.isRefreshing = false;
+        return false;
       } catch (error) {
-        console.error('Refresh token failed:', error)
+        console.error("Refresh token failed:", error);
         // 如果刷新失败，清除所有认证信息
-        this.logout()
-        this.isRefreshing = false
-        return false
+        this.logout();
+        this.isRefreshing = false;
+        return false;
       }
     },
 
     async checkAndRefreshToken(): Promise<boolean> {
       if (!this.token) {
-        return false
+        return false;
       }
 
       // 这里可以添加JWT过期检查逻辑
       // 简单起见，我们直接尝试刷新或保持当前状态
-      return true
+      return true;
     },
   },
-})
+});
