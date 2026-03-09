@@ -31,8 +31,19 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
+    /**
+     * 用户登录方法
+     * @param email 用户邮箱
+     * @param password 用户密码
+     * @throws 如果登录失败，httpClient 拦截器会自动处理错误并抛出异常
+     * @description
+     * - 调用 API 进行登录验证
+     * - 成功后存储访问令牌和用户信息
+     * - 设置用户角色并获取用户特定菜单
+     * - 更新路由配置
+     */
     async login(email: string, password: string): Promise<void> {
-      // 使用生成的 API 类，但传入自定义的 httpClient
+      // 使用生成的 API 类，传入自定义的 httpClient
       // 传入空字符串作为 basePath，让请求使用相对路径（通过 Vite 代理）
       const api = new DefaultApi(undefined, '', apiClient)
       const response = await api.login({
@@ -40,21 +51,21 @@ export const useAuthStore = defineStore('auth', {
         password,
       })
 
-      // 由于 httpClient 已经处理了错误，这里只处理成功情况
-      // response.data.data 不会是 undefined，因为错误情况已经被 httpClient 拦截
+      // httpClient 已经处理了错误，这里只处理成功情况
+      // response.data.data 不会是 undefined，因为错误情况已被 httpClient 拦截
       const loginData = response.data.data!
       const accessToken = loginData.accessToken
 
-      // 存储accessToken到localStorage
+      // 存储访问令牌到 localStorage
       this.token = accessToken || null
       localStorage.setItem('accessToken', accessToken || '')
 
-      // 获取完整的用户信息
+      // 获取完整的用户信息并存储
       const user = await this.fetchCurrentUser()
       this.userInfo = user
       localStorage.setItem('userInfo', JSON.stringify(user))
 
-      // Set user role in menu store and fetch user-specific menus
+      // 设置用户角色并获取用户特定菜单
       const menuStore = useMenuStore()
       menuStore.setUserRole(
         user.role as 'employee' | 'business_owner',
@@ -62,14 +73,12 @@ export const useAuthStore = defineStore('auth', {
         user.locationId
       )
 
-      // Fetch user-specific menus after successful login
+      // 获取用户特定菜单
       await menuStore.fetchUserMenus()
 
-      // Update router with user-specific routes
+      // 根据菜单生成动态路由
       const { generateRoutesFromMenus } = await import('@/router')
       generateRoutesFromMenus(menuStore.menus)
-
-      // 成功时直接返回，不需要返回 success 状态
     },
 
     async logout(): Promise<void> {

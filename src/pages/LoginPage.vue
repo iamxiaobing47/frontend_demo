@@ -74,20 +74,25 @@ const password = ref('')
 const showPassword = ref(false)
 const loading = ref(false)
 
-// 清除之前的错误
+// 组件挂载时清除之前的验证错误
 onMounted(() => {
   clearErrors()
 })
 
+/**
+ * 处理用户登录请求
+ * - 调用 authStore.login 方法进行登录
+ * - 错误处理由 httpClient 拦截器统一处理
+ * - 成功登录后跳转到首页
+ */
 const handleLogin = async () => {
   clearErrors()
   loading.value = true
 
-  // 直接使用authStore的登录方法，它会处理完整的登录流程
-  // 错误处理已经在 httpClient 中统一处理，成功时会直接返回
+  // 调用认证存储的登录方法，httpClient 会自动处理错误
   await authStore.login(email.value, password.value)
 
-  // 执行到这里说明登录成功
+  // 登录成功，更新UI状态并跳转
   loading.value = false
   showLoginDialog.value = false
   router.push('/home')
