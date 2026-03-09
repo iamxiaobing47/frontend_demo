@@ -29,11 +29,6 @@
         </v-card-title>
         <v-card-text>
           <v-form @submit.prevent="handleLogin">
-            <!-- 错误消息显示 -->
-            <v-alert v-if="errorMessage" type="error" variant="tonal" class="mb-4">
-              {{ errorMessage }}
-            </v-alert>
-
             <v-text-field
               v-model="email"
               label="邮箱"
@@ -68,7 +63,6 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import { useValidation } from '@/composables/useValidation'
-import { getMessageTextWithDefault } from '@/utils/messageTexts'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -79,7 +73,6 @@ const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const loading = ref(false)
-const errorMessage = ref('') // 添加错误消息状态
 
 // 清除之前的错误
 onMounted(() => {
@@ -88,25 +81,16 @@ onMounted(() => {
 
 const handleLogin = async () => {
   clearErrors()
-  errorMessage.value = '' // 清空之前错误消息
   loading.value = true
 
-  try {
-    // 直接使用authStore的登录方法，它会处理完整的登录流程
-    const loginResult = await authStore.login(email.value, password.value)
+  // 直接使用authStore的登录方法，它会处理完整的登录流程
+  // 错误处理已经在 httpClient 中统一处理，成功时会直接返回
+  await authStore.login(email.value, password.value)
 
-    if (loginResult.success) {
-      loading.value = false
-      showLoginDialog.value = false
-      router.push('/home')
-    } else {
-      // 错误已经在 httpClient 中显示，这里可以清空本地错误消息
-      loading.value = false
-    }
-  } catch (error: any) {
-    // 错误已经在 httpClient 中处理并显示，这里只处理加载状态
-    loading.value = false
-  }
+  // 执行到这里说明登录成功
+  loading.value = false
+  showLoginDialog.value = false
+  router.push('/home')
 }
 </script>
 

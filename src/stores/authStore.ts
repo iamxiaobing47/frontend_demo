@@ -31,50 +31,45 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    async login(email: string, password: string): Promise<{ success: boolean; message?: string }> {
-      try {
-        // 使用生成的 API 类，但传入自定义的 httpClient
-        // 传入空字符串作为 basePath，让请求使用相对路径（通过 Vite 代理）
-        const api = new DefaultApi(undefined, '', apiClient)
-        const response = await api.login({
-          email,
-          password,
-        })
+    async login(email: string, password: string): Promise<void> {
+      // 使用生成的 API 类，但传入自定义的 httpClient
+      // 传入空字符串作为 basePath，让请求使用相对路径（通过 Vite 代理）
+      const api = new DefaultApi(undefined, '', apiClient)
+      const response = await api.login({
+        email,
+        password,
+      })
 
-        // 由于 httpClient 已经处理了错误，这里只处理成功情况
-        // response.data.data 不会是 undefined，因为错误情况已经被 httpClient 拦截
-        const loginData = response.data.data!
-        const accessToken = loginData.accessToken
+      // 由于 httpClient 已经处理了错误，这里只处理成功情况
+      // response.data.data 不会是 undefined，因为错误情况已经被 httpClient 拦截
+      const loginData = response.data.data!
+      const accessToken = loginData.accessToken
 
-        // 存储accessToken到localStorage
-        this.token = accessToken || null
-        localStorage.setItem('accessToken', accessToken || '')
+      // 存储accessToken到localStorage
+      this.token = accessToken || null
+      localStorage.setItem('accessToken', accessToken || '')
 
-        // 获取完整的用户信息
-        const user = await this.fetchCurrentUser()
-        this.userInfo = user
-        localStorage.setItem('userInfo', JSON.stringify(user))
+      // 获取完整的用户信息
+      const user = await this.fetchCurrentUser()
+      this.userInfo = user
+      localStorage.setItem('userInfo', JSON.stringify(user))
 
-        // Set user role in menu store and fetch user-specific menus
-        const menuStore = useMenuStore()
-        menuStore.setUserRole(
-          user.role as 'employee' | 'business_owner',
-          user.businessOwnerId,
-          user.locationId
-        )
+      // Set user role in menu store and fetch user-specific menus
+      const menuStore = useMenuStore()
+      menuStore.setUserRole(
+        user.role as 'employee' | 'business_owner',
+        user.businessOwnerId,
+        user.locationId
+      )
 
-        // Fetch user-specific menus after successful login
-        await menuStore.fetchUserMenus()
+      // Fetch user-specific menus after successful login
+      await menuStore.fetchUserMenus()
 
-        // Update router with user-specific routes
-        const { generateRoutesFromMenus } = await import('@/router')
-        generateRoutesFromMenus(menuStore.menus)
+      // Update router with user-specific routes
+      const { generateRoutesFromMenus } = await import('@/router')
+      generateRoutesFromMenus(menuStore.menus)
 
-        return { success: true }
-      } catch (error: any) {
-        // 错误已经在 httpClient 中处理并显示，这里只返回失败状态
-        return { success: false, message: '登录失败' }
-      }
+      // 成功时直接返回，不需要返回 success 状态
     },
 
     async logout(): Promise<void> {
