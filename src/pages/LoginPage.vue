@@ -72,7 +72,7 @@ import { getMessageTextWithDefault } from '@/utils/messageTexts'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const { getFieldError, clearErrors, handleValidationResponse } = useValidation()
+const { getFieldError, clearErrors } = useValidation()
 
 const showLoginDialog = ref(false)
 const email = ref('')

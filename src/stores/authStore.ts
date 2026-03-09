@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { DefaultApi, LoginRequest } from '@/services/generated/api'
+import apiClient from '@/services/api'
 import { useMenuStore } from '@/stores/menuStore'
 
 interface UserInfo {
@@ -32,13 +32,10 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async login(email: string, password: string): Promise<{ success: boolean; message?: string }> {
       try {
-        const loginRequest: LoginRequest = {
+        const response = await apiClient.post('/auth/login', {
           email,
           password,
-        }
-
-        const api = new DefaultApi()
-        const response = await api.login(loginRequest)
+        })
 
         if (response.data.success && response.data.data?.accessToken) {
           const loginData = response.data.data
@@ -96,8 +93,7 @@ export const useAuthStore = defineStore('auth', {
     async logout(): Promise<void> {
       try {
         // 调用后端登出接口
-        const api = new DefaultApi()
-        await api.logout()
+        await apiClient.post('/auth/logout')
       } catch (error) {
         console.error('Logout failed:', error)
       } finally {
@@ -154,9 +150,8 @@ export const useAuthStore = defineStore('auth', {
 
     async fetchCurrentUser(): Promise<UserInfo> {
       try {
-        // 创建API实例来调用用户信息接口
-        const api = new DefaultApi()
-        const response = await api.getCurrentUser()
+        // 调用用户信息接口
+        const response = await apiClient.get('/auth/user')
 
         if (response.data.success && response.data.data) {
           const userData = response.data.data
