@@ -5,11 +5,11 @@ import { useAuthStore } from '@/stores/authStore'
 const modules = import.meta.glob('@/pages/**/*.vue', { eager: true })
 
 const titleMap: Record<string, string> = {
-  IndexPage: '首页',
-  ListPage: '一览',
-  FileUploadPage: '文件上传',
-  ProcessResultPage: '处理结果',
-  TemplateDownloadPage: '模板下载',
+  HomePage: '首页',
+  ProjectListPage: '项目列表',
+  UploadPage: '文件上传',
+  ResultPage: '处理结果',
+  TemplatePage: '模板下载',
 }
 
 const routes: RouteRecordRaw[] = [
@@ -27,12 +27,12 @@ for (const path in pagesDir) {
   const component = pagesDir[path].default
   const fileName = path.split('/').pop()?.replace('.vue', '') || ''
 
-  if (fileName === 'LoginIndexPage') {
+  if (fileName === 'LoginPage') {
     routes.push({
-      path: '/login-index',
-      name: 'login-index',
+      path: '/login',
+      name: 'login',
       component,
-      meta: { title: '首页', showInNav: false },
+      meta: { title: '登录', showInNav: false },
     })
     continue
   }
@@ -52,7 +52,7 @@ for (const path in pagesDir) {
   let metaTitle = titleMap[fileName] || fileName.replace('Page', '')
 
   if (fileName === 'index') {
-    routePath = '/index'
+    routePath = '/home'
     routeName = 'index'
     metaTitle = '首页'
   }
@@ -70,7 +70,7 @@ for (const path in pagesDir) {
     component,
     meta: {
       title: metaTitle,
-      showInNav: fileName !== 'IndexPage' && fileName !== 'ProcessResultPage',
+      showInNav: fileName !== 'HomePage' && fileName !== 'ResultPage',
       requiresAuth: true,
     },
   }
@@ -82,11 +82,11 @@ for (const path in pagesDir) {
 
 routes[0].children!.sort((a, b) => {
   const order: Record<string, number> = {
-    '/index': 0,
-    '/template-download': 1,
-    '/file-upload': 2,
-    '/list': 3,
-    '/process-result': 4,
+    '/home': 0,
+    '/template': 1,
+    '/upload': 2,
+    '/projectlist': 3,
+    '/result': 4,
   }
   return (order[a.path] ?? 99) - (order[b.path] ?? 99)
 })
@@ -100,23 +100,18 @@ router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore()
   const isAuthenticated = authStore.isAuthenticated
 
-  if (to.path === '/login-index' && isAuthenticated) {
-    next('/index')
-    return
-  }
-
-  if (to.path === '/' && isAuthenticated) {
-    next('/index')
+  if (to.path === '/login' && isAuthenticated) {
+    next('/home')
     return
   }
 
   if (to.path === '/' && !isAuthenticated) {
-    next('/login-index')
+    next('/login')
     return
   }
 
   if (to.meta.requiresAuth && !isAuthenticated) {
-    next('/login-index')
+    next('/login')
     return
   }
 

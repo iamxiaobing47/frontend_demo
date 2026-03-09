@@ -84,11 +84,11 @@ const getIcon = (name: string) => {
 
 const handleLogout = () => {
   authStore.logout()
-  router.push('/login-index')
+  router.push('/login')
 }
 
 const goHome = () => {
   appStore.drawer = false
-  router.push('/index')
+  router.push('/home')
 }
 </script>

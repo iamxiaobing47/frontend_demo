@@ -17,6 +17,6 @@ import { useAppStore } from '@/stores/appStore'
 const appStore = useAppStore()
 
 onMounted(() => {
-  appStore.setBreadcrumbs([{ title: '首页', to: '/index' }, { title: '文件模板下载' }])
+  appStore.setBreadcrumbs([{ title: '首页', to: '/home' }, { title: '文件模板下载' }])
 })
 </script>

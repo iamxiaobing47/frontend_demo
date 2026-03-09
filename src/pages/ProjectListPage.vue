@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="text-h4 mb-4">一览</h1>
+    <h1 class="text-h4 mb-4">项目列表</h1>
     <v-card>
       <v-card-text>
         <v-data-table :headers="headers" :items="items" :items-per-page="10" />
@@ -17,7 +17,7 @@ const appStore = useAppStore()
 
 const headers = [
   { title: 'ID', key: 'id' },
-  { title: '名称', key: 'name' },
+  { title: '项目名称', key: 'name' },
   { title: '状态', key: 'status' },
   { title: '创建时间', key: 'createdAt' },
 ]
@@ -28,6 +28,6 @@ const items = [
 ]
 
 onMounted(() => {
-  appStore.setBreadcrumbs([{ title: '首页', to: '/index' }, { title: '一览' }])
+  appStore.setBreadcrumbs([{ title: '首页', to: '/home' }, { title: '项目列表' }])
 })
 </script>

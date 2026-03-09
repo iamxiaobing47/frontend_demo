@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { testApi } from '@/services/test'
 
-export const useIndexStore = defineStore('index', {
+export const useHomeStore = defineStore('home', {
   state: () => ({
     loading: false,
     data: undefined as string | undefined,

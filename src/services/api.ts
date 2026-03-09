@@ -88,13 +88,13 @@ apiClient.interceptors.response.use(
         } else {
           // 刷新失败，跳转到登录页
           authStore.logout()
-          window.location.href = '/login-index'
+          window.location.href = '/login'
           processQueue(new Error('Token refresh failed'))
           return Promise.reject(error)
         }
       } catch (refreshError) {
         useAuthStore().logout()
-        window.location.href = '/login-index'
+        window.location.href = '/login'
         processQueue(refreshError)
         return Promise.reject(refreshError)
       } finally {
