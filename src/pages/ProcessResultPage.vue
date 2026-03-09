@@ -3,9 +3,7 @@
     <h1 class="text-h4 mb-4">文件处理结果</h1>
     <v-card>
       <v-card-text>
-        <v-alert type="success" variant="tonal" class="mb-4">
-          文件处理完成
-        </v-alert>
+        <v-alert type="success" variant="tonal" class="mb-4"> 文件处理完成 </v-alert>
         <v-table>
           <thead>
             <tr>
@@ -28,15 +26,12 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
-import { useAppStore } from "@/stores/app";
+import { onMounted } from 'vue'
+import { useAppStore } from '@/stores/appStore'
 
-const appStore = useAppStore();
+const appStore = useAppStore()
 
 onMounted(() => {
-  appStore.setBreadcrumbs([
-    { title: "首页", to: "/index" },
-    { title: "文件处理结果" },
-  ]);
-});
+  appStore.setBreadcrumbs([{ title: '首页', to: '/index' }, { title: '文件处理结果' }])
+})
 </script>
