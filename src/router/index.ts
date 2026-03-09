@@ -6,6 +6,7 @@ const modules = import.meta.glob("@/pages/**/*.vue", { eager: true });
 
 const titleMap: Record<string, string> = {
   HomePage: "首页",
+  ProcessResultPage: "处理结果",
   ProjectListPage: "项目列表",
   UploadPage: "文件上传",
   ResultPage: "处理结果",
