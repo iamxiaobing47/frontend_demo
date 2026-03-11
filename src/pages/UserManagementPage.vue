@@ -198,10 +198,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAppStore } from '@/stores/appStore'
 import { useUserStore } from '@/stores/userStore'
-import type { UserInfo, CreateUserRequest, UpdateUserRequest } from '@/services/generated/api'
+import type {
+  UserInfoEntity as UserInfo,
+  CreateUserRequest,
+  UpdateUserRequest,
+} from '@/services/generated/api'
 
 const appStore = useAppStore()
 const userStore = useUserStore()
@@ -300,22 +304,9 @@ const handleSubmit = async () => {
 const fetchUser = async () => {
   if (!queryUserId.value) return
 
-  try {
-    userStore.error = '' // 清除之前的错误
-    const response = await userStore.fetchUserById(queryUserId.value)
-    if (response.data?.data) {
-      displayedUser.value = response.data.data
-    } else {
-      // API返回成功但没有数据
-      displayedUser.value = null
-      userStore.error = '未找到指定的用户'
-    }
-  } catch (error) {
-    // Error is handled by httpClient interceptor, but we should not navigate away
-    console.error('Failed to fetch user:', error)
-    // Ensure we stay on this page and show the error
-    displayedUser.value = null
-  }
+  userStore.error = '' // 清除之前的错误
+  const userData = await userStore.fetchUserById(queryUserId.value)
+  displayedUser.value = userData || null
 }
 
 // 批量查询用户
@@ -326,22 +317,9 @@ const batchFetchUsers = async () => {
     .map(id => id.trim())
     .filter(id => id.length > 0)
   if (userIds.length > 0) {
-    try {
-      userStore.error = '' // 清除之前的错误
-      const response = await userStore.batchGetUsers(userIds)
-      if (response.data?.data) {
-        batchUsers.value = response.data.data
-      } else {
-        // API返回成功但没有数据
-        batchUsers.value = []
-        userStore.error = '未找到指定的用户'
-      }
-    } catch (error) {
-      // Error is handled by httpClient interceptor, but we should not navigate away
-      console.error('Failed to batch fetch users:', error)
-      // Ensure we stay on this page and show the error
-      batchUsers.value = []
-    }
+    userStore.error = '' // 清除之前的错误
+    const usersData = await userStore.batchGetUsers(userIds)
+    batchUsers.value = usersData || []
   }
 }
 
@@ -386,19 +364,14 @@ const confirmDelete = (userId: string) => {
 // 处理删除
 const handleDelete = async () => {
   if (userToDelete.value) {
-    try {
-      await userStore.deleteUser(userToDelete.value)
-      // If no error is thrown, assume success
-      showDeleteDialog.value = false
-      userToDelete.value = null
-      displayedUser.value = null
-      // 从批量列表中移除已删除的用户
-      batchUsers.value = batchUsers.value.filter(user => user.userId !== userToDelete.value)
-      operationSuccess.value = true
-    } catch (error) {
-      // Error is handled by httpClient interceptor
-      console.error('Failed to delete user:', error)
-    }
+    await userStore.deleteUser(userToDelete.value)
+    // If no error is thrown, assume success
+    showDeleteDialog.value = false
+    userToDelete.value = null
+    displayedUser.value = null
+    // 从批量列表中移除已删除的用户
+    batchUsers.value = batchUsers.value.filter(user => user.userId !== userToDelete.value)
+    operationSuccess.value = true
   }
 }
 </script>

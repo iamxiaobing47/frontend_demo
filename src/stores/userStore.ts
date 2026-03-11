@@ -44,29 +44,34 @@ export const useUserStore = defineStore('user', () => {
 
   // 根据用户ID获取单个用户
   const fetchUserById = async (userId: string) => {
-    return await api.getUser(userId)
+    const response = await api.getUser(userId)
+    return response.data.data
   }
 
   // 批量获取用户
   const batchGetUsers = async (userIds: string[]) => {
     const request: BatchUserQueryRequest = { userIds }
-    return await api.batchGetUsers(request)
+    const response = await api.batchGetUsers(request)
+    return response.data.data
   }
 
   // 创建用户
   const createUser = async (userData: CreateUserRequest) => {
-    return await api.createUser(userData)
+    const response = await api.createUser(userData)
+    return response.data.data
   }
 
   // 更新用户
   const updateUser = async (userData: UpdateUserRequest) => {
-    return await api.updateUser(userData)
+    const response = await api.updateUser(userData)
+    return response.data.data
   }
 
   // 删除用户
   const deleteUser = async (userId: string, userType?: string) => {
     const request: DeleteUserRequest = { userId, userType }
-    return await api.deleteUser(request)
+    const response = await api.deleteUser(request)
+    return response.data.data
   }
 
   // 重置当前用户
