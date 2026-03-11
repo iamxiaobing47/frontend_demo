@@ -14,7 +14,9 @@
         <template #activator="{ props }">
           <v-btn icon v-bind="props">
             <v-avatar size="32" color="primary">
-              <span class="text-white">U</span>
+              <span class="text-white">{{
+                userInfo.username ? userInfo.username.charAt(0).toUpperCase() : 'U'
+              }}</span>
             </v-avatar>
           </v-btn>
         </template>

@@ -19,13 +19,26 @@ interface MenuState {
   initialized: boolean
 }
 
+// 从localStorage加载菜单数据
+const loadMenusFromStorage = (): MenuItem[] => {
+  try {
+    const storedMenus = localStorage.getItem('userMenus')
+    if (storedMenus) {
+      return JSON.parse(storedMenus)
+    }
+  } catch (error) {
+    console.error('Failed to load menus from storage:', error)
+  }
+  return []
+}
+
 export const useMenuStore = defineStore('menu', {
   state: (): MenuState => ({
-    menus: [],
+    menus: loadMenusFromStorage(),
     businessOwnerId: null,
     locationId: null,
     loading: false,
-    initialized: false,
+    initialized: localStorage.getItem('userMenus') !== null,
   }),
 
   getters: {
@@ -55,6 +68,12 @@ export const useMenuStore = defineStore('menu', {
     setMenus(menus: MenuItem[]) {
       this.menus = menus
       this.initialized = true
+      // 保存到localStorage
+      try {
+        localStorage.setItem('userMenus', JSON.stringify(menus))
+      } catch (error) {
+        console.error('Failed to save menus to storage:', error)
+      }
     },
 
     setLoading(loading: boolean) {
@@ -66,6 +85,8 @@ export const useMenuStore = defineStore('menu', {
       this.businessOwnerId = null
       this.locationId = null
       this.initialized = false
+      // 清理localStorage中的菜单数据
+      localStorage.removeItem('userMenus')
     },
 
     async fetchUserMenus() {
