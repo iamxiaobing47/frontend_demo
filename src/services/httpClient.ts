@@ -48,8 +48,25 @@ const processQueue = (error: unknown, token: string | null = null) => {
 }
 
 // 解析并显示错误消息
-const showError = (messageCode: string, messageArgs?: string[]) => {
-  const message = resolveMessage(messageCode, ...(messageArgs || []))
+const showError = (messageCode: string, messageArgs?: string[], requestUrl?: string) => {
+  let message = resolveMessage(messageCode, ...(messageArgs || []))
+
+  // 根据API路径对特定错误码进行特殊处理
+  if (messageCode === 'E010' && requestUrl) {
+    // 用户查询相关API的参数错误，通常表示用户不存在
+    if (
+      requestUrl.includes('/api/users/') &&
+      !requestUrl.includes('/api/users/batch') &&
+      !requestUrl.includes('/api/users/create') &&
+      !requestUrl.includes('/api/users/update')
+    ) {
+      message = '用户未找到'
+    }
+    // 批量查询用户的参数错误
+    else if (requestUrl.includes('/api/users/batch')) {
+      message = '指定的用户未找到'
+    }
+  }
 
   // 尝试使用全局 snackbar 函数，如果不存在则使用 alert
   if (window.showSnackbar) {
@@ -82,7 +99,7 @@ apiClient.interceptors.response.use(
     if (!apiResponse.success) {
       // 处理业务逻辑错误
       if (apiResponse.messageCode) {
-        showError(apiResponse.messageCode, apiResponse.messageArgs)
+        showError(apiResponse.messageCode, apiResponse.messageArgs, response.config.url)
       }
 
       // 拒绝 Promise，让调用方知道请求失败
@@ -148,7 +165,7 @@ apiClient.interceptors.response.use(
       // 服务器返回了错误响应（非 401）
       const apiResponse = error.response.data as ApiResponse
       if (apiResponse && apiResponse.messageCode) {
-        showError(apiResponse.messageCode, apiResponse.messageArgs)
+        showError(apiResponse.messageCode, apiResponse.messageArgs, error.config?.url)
       }
     }
 
