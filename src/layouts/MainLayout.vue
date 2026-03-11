@@ -19,8 +19,10 @@
           </v-btn>
         </template>
         <v-list>
-          <v-list-item prepend-icon="mdi-account" title="Profile" />
-          <v-list-item prepend-icon="mdi-cog" title="Settings" />
+          <v-list-item>
+            <v-list-item-title class="font-weight-bold">{{ userInfo.username }}</v-list-item-title>
+            <v-list-item-subtitle>{{ userInfo.email }}</v-list-item-subtitle>
+          </v-list-item>
           <v-divider />
           <v-list-item prepend-icon="mdi-logout" title="Logout" @click="handleLogout" />
         </v-list>
@@ -43,15 +45,7 @@
 
         <!-- Render menu items when not loading and menus are available -->
         <template v-else>
-          <!-- Always show Home page first -->
-          <v-list-item
-            to="/home"
-            prepend-icon="mdi-home"
-            title="首页"
-            value="home"
-            color="primary"
-          />
-          <!-- Render the menu items -->
+          <!-- Render the menu items (Home page is excluded from menu) -->
           <template v-for="item in menuItems" :key="item.id">
             <v-list-item
               v-if="!item.children || item.children.length === 0"
@@ -89,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useAppStore } from '@/stores/appStore'
 import { useAuthStore } from '@/stores/authStore'
 import { useMenuStore } from '@/stores/menuStore'
@@ -100,9 +94,42 @@ const authStore = useAuthStore()
 const menuStore = useMenuStore()
 const router = useRouter()
 
+// 用户信息
+const userInfo = ref({
+  username: '',
+  email: '',
+})
+
 // Use dynamic menu from store instead of router-based menu
 const menuItems = computed(() => {
   return menuStore.getUserMenus
+})
+
+// 获取用户信息
+const fetchUserInfo = async () => {
+  try {
+    // 从authStore获取用户信息
+    const user = await authStore.fetchCurrentUser()
+    userInfo.value = {
+      username: user.username || 'Unknown User',
+      email: user.email || 'No email',
+    }
+  } catch (error) {
+    console.error('Failed to fetch user info:', error)
+    // 如果获取失败，尝试从localStorage获取
+    const storedUserInfo = localStorage.getItem('userInfo')
+    if (storedUserInfo) {
+      const parsed = JSON.parse(storedUserInfo)
+      userInfo.value = {
+        username: parsed.username || 'Unknown User',
+        email: parsed.email || 'No email',
+      }
+    }
+  }
+}
+
+onMounted(() => {
+  fetchUserInfo()
 })
 
 const handleLogout = async () => {
