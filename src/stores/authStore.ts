@@ -74,10 +74,6 @@ export const useAuthStore = defineStore('auth', {
 
       // 获取用户特定菜单
       await menuStore.fetchUserMenus()
-
-      // 根据菜单生成动态路由
-      const { generateRoutesFromMenus } = await import('@/router')
-      generateRoutesFromMenus(menuStore.menus)
     },
 
     async logout(): Promise<void> {

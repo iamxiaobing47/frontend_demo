@@ -5,15 +5,7 @@ import { useAuthStore } from '@/stores/authStore'
 // Eager load all pages
 const modules = import.meta.glob('@/pages/**/*.vue', { eager: true })
 
-// Title mapping remains for fallback
-const titleMap: Record<string, string> = {
-  HomePage: '首页',
-  ProcessResultPage: '处理结果',
-  ProjectListPage: '项目列表',
-  UploadPage: '文件上传',
-  ResultPage: '处理结果',
-  TemplatePage: '模板下载',
-}
+// No title mapping needed - use filename directly as title
 
 // Define static routes that don't depend on user permissions
 const staticRoutes: RouteRecordRaw[] = [
@@ -36,73 +28,55 @@ const mainLayoutRoute: RouteRecordRaw & { children: RouteRecordRaw[] } = {
 // Combined routes
 const routes: RouteRecordRaw[] = [...staticRoutes, mainLayoutRoute]
 
-// Function to generate routes from menu data
-export function generateRoutesFromMenus(menus: any[]) {
-  // Clear existing dynamic routes
-  mainLayoutRoute.children = []
-
-  // Load all available components
-  const pagesDir = modules as Record<string, any>
-
-  // Add routes based on user's menu permissions
-  menus.forEach(menu => {
-    // Find the corresponding component
-    let componentPath = ''
-    let componentName = ''
-
-    // Look for a page component that matches the menu path
-    for (const path in pagesDir) {
-      const fileName = path.split('/').pop()?.replace('.vue', '') || ''
-      // Convert filename to lowercase and remove 'Page' to match menu path
-      const normalizedFileName = fileName.toLowerCase().replace('page', '')
-
-      if (normalizedFileName === menu.path.replace('/', '')) {
-        componentPath = path
-        componentName = fileName
-        break
-      }
-    }
-
-    // If we found a matching component, add the route
-    if (componentPath && pagesDir[componentPath]) {
-      const component = pagesDir[componentPath].default
-      const metaTitle = titleMap[componentName] || menu.title || componentName.replace('Page', '')
-
-      const route: RouteRecordRaw = {
-        path: menu.path,
-        name: componentName.toLowerCase().replace('page', ''),
-        component,
-        meta: {
-          title: metaTitle,
-          showInNav: true,
-          requiresAuth: true,
-        },
-      }
-
-      // Add route to main layout
-      mainLayoutRoute.children.push(route)
-    }
-  })
-
-  // Note: Menu items are already sorted by the backend based on sort_order field
-  // No additional sorting needed here
-}
-
-// Initialize with basic routes (only static ones for now)
-// HomePage is always available to all authenticated users
+// Initialize with all possible page routes
+// Menu permissions are handled by the navigation display, not by route existence
 const pagesDir = modules as Record<string, any>
 
-// Always add HomePage route for all users
-if (pagesDir['/src/pages/HomePage.vue']) {
-  mainLayoutRoute.children!.push({
-    path: '/home',
-    name: 'home',
-    component: pagesDir['/src/pages/HomePage.vue'].default,
-    meta: { requiresAuth: true, title: '首页' },
-  })
+// Add all available page routes
+for (const path in pagesDir) {
+  const fileName = path.split('/').pop()?.replace('.vue', '') || ''
+  // Convert filename to path (remove 'Page' suffix and convert to lowercase)
+  const routePath = '/' + fileName.replace(/Page$/, '').toLowerCase()
+
+  // Skip login page as it's already defined in static routes
+  if (fileName === 'LoginPage') continue
+
+  const route: RouteRecordRaw = {
+    path: routePath,
+    name: fileName.toLowerCase().replace('page', ''),
+    component: pagesDir[path].default,
+    meta: {
+      title: fileName.replace('Page', ''),
+      showInNav: fileName !== 'HomePage' && fileName !== 'ResultPage',
+      requiresAuth: true,
+    },
+  }
+
+  mainLayoutRoute.children.push(route)
 }
 
-// Other pages will be added dynamically based on user permissions via generateRoutesFromMenus
+// Sort routes by a predefined order
+mainLayoutRoute.children.sort((a, b) => {
+  const order: Record<string, number> = {
+    '/home': 0,
+    '/template': 1,
+    '/upload': 2,
+    '/projectlist': 3,
+    '/result': 4,
+    '/usermanagement': 5,
+    '/processresult': 6,
+    '/styletest': 7,
+  }
+  return (order[a.path] ?? 99) - (order[b.path] ?? 99)
+})
+
+// Function to generate routes from menu data - NO LONGER NEEDED
+// Menu permissions are now handled purely by navigation display logic
+export function generateRoutesFromMenus(_menus: any[]) {
+  // This function is kept for compatibility but does nothing
+  // All routes are pre-defined, menu only controls visibility in navigation
+  console.log('Menu-based route generation is deprecated. Routes are now pre-defined.')
+}
 
 const router = createRouter({
   history: createWebHistory(),

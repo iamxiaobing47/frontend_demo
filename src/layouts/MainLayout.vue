@@ -56,24 +56,20 @@
             <v-list-item
               v-if="!item.children || item.children.length === 0"
               :to="item.path"
-              :prepend-icon="item.icon || getIcon(item.id)"
+              :prepend-icon="item.icon"
               :title="item.title"
               :value="item.id"
               color="primary"
             />
             <v-list-group v-else :value="item.id">
               <template #activator="{ props }">
-                <v-list-item
-                  v-bind="props"
-                  :prepend-icon="item.icon || getIcon(item.id)"
-                  :title="item.title"
-                />
+                <v-list-item v-bind="props" :prepend-icon="item.icon" :title="item.title" />
               </template>
               <v-list-item
                 v-for="child in item.children"
                 :key="child.id"
                 :to="child.path"
-                :prepend-icon="child.icon || getIcon(child.id)"
+                :prepend-icon="child.icon"
                 :title="child.title"
                 :value="child.id"
                 color="primary"
@@ -108,21 +104,6 @@ const router = useRouter()
 const menuItems = computed(() => {
   return menuStore.getUserMenus
 })
-
-const getIcon = (id: string) => {
-  const iconMap: Record<string, string> = {
-    home: 'mdi-home',
-    about: 'mdi-information',
-    user: 'mdi-account',
-    settings: 'mdi-cog',
-    dashboard: 'mdi-view-dashboard',
-    projectlist: 'mdi-folder-multiple',
-    template: 'mdi-download',
-    upload: 'mdi-upload',
-    result: 'mdi-file-document',
-  }
-  return iconMap[id.toLowerCase()] || 'mdi-page-next'
-}
 
 const handleLogout = async () => {
   await authStore.logout()
