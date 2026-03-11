@@ -41,8 +41,9 @@ export const useHomeStore = defineStore('home', {
       this.error = ''
       try {
         // 使用生成的 API 类，传入自定义的 httpClient
+        // 调用 test1 (GET) 版本，不需要参数，返回测试字符串
         const api = new DefaultApi(undefined, '', apiClient)
-        const response = await api.test()
+        const response = await api.test1()
 
         // httpClient 已经处理了错误，这里只处理成功情况
         this.data = response.data.data || ''
