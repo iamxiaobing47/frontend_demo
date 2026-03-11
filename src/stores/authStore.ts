@@ -11,9 +11,6 @@ interface UserInfo {
   locationId?: string
 }
 
-// 从后端API导入UserInfo类型
-import type { UserInfo as BackendUserInfo } from '@/services/generated/api'
-
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: (() => {

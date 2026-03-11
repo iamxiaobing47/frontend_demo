@@ -61,7 +61,7 @@
               :value="item.id"
               color="primary"
             />
-            <v-list-group v-else>
+            <v-list-group v-else :value="item.id">
               <template #activator="{ props }">
                 <v-list-item
                   v-bind="props"
@@ -77,7 +77,6 @@
                 :title="child.title"
                 :value="child.id"
                 color="primary"
-                style="padding-left: 40px"
               />
             </v-list-group>
           </template>

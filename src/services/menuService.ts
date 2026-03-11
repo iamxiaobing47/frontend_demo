@@ -1,7 +1,6 @@
 import apiClient from '@/services/httpClient'
 import { NavigationControllerApi } from '@/services/generated/api'
 import { NavigationDTO } from '@/services/generated/api'
-import { MenuItem } from '@/stores/menuStore'
 
 export interface ApiResponse<T = any> {
   success: boolean
