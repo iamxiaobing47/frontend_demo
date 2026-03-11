@@ -13,11 +13,7 @@ interface UserInfo {
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    // 清理可能的旧 token
     token: (() => {
-      if (localStorage.getItem('mocktoken')) {
-        localStorage.removeItem('mocktoken')
-      }
       return localStorage.getItem('accessToken') || null
     })(),
     userInfo: JSON.parse(localStorage.getItem('userInfo') || 'null') as UserInfo | null,
@@ -61,24 +57,24 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem('accessToken', accessToken || '')
 
       // 获取完整的用户信息并存储
-      const user = await this.fetchCurrentUser()
+      const user = loginData.userInfo
       this.userInfo = user
       localStorage.setItem('userInfo', JSON.stringify(user))
 
-      // 设置用户角色并获取用户特定菜单
-      const menuStore = useMenuStore()
-      menuStore.setUserRole(
-        user.role as 'employee' | 'business_owner',
-        user.businessOwnerId,
-        user.locationId
-      )
+      // // 设置用户角色并获取用户特定菜单
+      // const menuStore = useMenuStore()
+      // menuStore.setUserRole(
+      //   user.role as 'employee' | 'business_owner',
+      //   user.businessOwnerId,
+      //   user.locationId
+      // )
 
-      // 获取用户特定菜单
-      await menuStore.fetchUserMenus()
+      // // 获取用户特定菜单
+      // await menuStore.fetchUserMenus()
 
-      // 根据菜单生成动态路由
-      const { generateRoutesFromMenus } = await import('@/router')
-      generateRoutesFromMenus(menuStore.menus)
+      // // 根据菜单生成动态路由
+      // const { generateRoutesFromMenus } = await import('@/router')
+      // generateRoutesFromMenus(menuStore.menus)
     },
 
     async logout(): Promise<void> {
