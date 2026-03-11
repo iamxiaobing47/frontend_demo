@@ -118,14 +118,10 @@ const fetchUserInfo = async () => {
     }
   } catch (error) {
     console.error('Failed to fetch user info:', error)
-    // 如果获取失败，尝试从localStorage获取
-    const storedUserInfo = localStorage.getItem('userInfo')
-    if (storedUserInfo) {
-      const parsed = JSON.parse(storedUserInfo)
-      userInfo.value = {
-        username: parsed.username || 'Unknown User',
-        email: parsed.email || 'No email',
-      }
+    // 如果获取失败，重置用户信息
+    userInfo.value = {
+      username: 'Unknown User',
+      email: 'No email',
     }
   }
 }

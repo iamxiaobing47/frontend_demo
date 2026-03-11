@@ -12,10 +12,8 @@ interface UserInfo {
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    token: (() => {
-      return localStorage.getItem('accessToken') || null
-    })(),
-    userInfo: JSON.parse(localStorage.getItem('userInfo') || 'null') as UserInfo | null,
+    token: null as string | null,
+    userInfo: null as UserInfo | null,
     isRefreshing: false,
   }),
 
@@ -51,9 +49,8 @@ export const useAuthStore = defineStore('auth', {
       const loginData = response.data.data!
       const accessToken = loginData.accessToken
 
-      // 存储访问令牌到 localStorage
+      // 存储访问令牌
       this.token = accessToken || null
-      localStorage.setItem('accessToken', accessToken || '')
 
       // 获取完整的用户信息并存储
       const user = loginData.userInfo
@@ -64,7 +61,6 @@ export const useAuthStore = defineStore('auth', {
           businessOwnerId: user.orgId,
           locationId: user.orgId,
         }
-        localStorage.setItem('userInfo', JSON.stringify(this.userInfo))
       }
 
       // 设置用户角色并获取用户特定菜单
@@ -83,11 +79,9 @@ export const useAuthStore = defineStore('auth', {
       } catch (error) {
         console.error('Logout failed:', error)
       } finally {
-        // 清除本地存储
+        // 清除store数据（持久化插件会自动清理sessionStorage）
         this.token = null
         this.userInfo = null
-        localStorage.removeItem('accessToken')
-        localStorage.removeItem('userInfo')
       }
     },
 
@@ -135,20 +129,17 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async fetchCurrentUser(): Promise<UserInfo> {
-      // 直接返回本地存储的用户信息
-      const storedUserInfo = localStorage.getItem('userInfo')
-      if (storedUserInfo) {
-        const parsed = JSON.parse(storedUserInfo)
-        // 确保返回的用户信息符合 UserInfo 接口
-        return {
-          username: parsed.username || '',
-          email: parsed.email || '',
-          businessOwnerId: parsed.businessOwnerId,
-          locationId: parsed.locationId,
-        }
+      if (this.userInfo) {
+        return this.userInfo
       } else {
-        throw new Error('No user info found in local storage')
+        throw new Error('No user info found in store')
       }
     },
+  },
+
+  // 启用持久化
+  persist: {
+    key: 'auth',
+    storage: sessionStorage,
   },
 })
