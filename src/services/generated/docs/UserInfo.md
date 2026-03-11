@@ -5,14 +5,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**pk** | **number** |  | [optional] [default to undefined]
-**createdAt** | **string** |  | [optional] [default to undefined]
-**updatedAt** | **string** |  | [optional] [default to undefined]
 **userId** | **string** |  | [optional] [default to undefined]
 **userType** | **string** |  | [optional] [default to undefined]
 **email** | **string** |  | [optional] [default to undefined]
 **userName** | **string** |  | [optional] [default to undefined]
-**orgId** | **number** |  | [optional] [default to undefined]
+**orgId** | **string** |  | [optional] [default to undefined]
 **orgName** | **string** |  | [optional] [default to undefined]
 **orgType** | **string** |  | [optional] [default to undefined]
 
@@ -22,9 +19,6 @@ Name | Type | Description | Notes
 import { UserInfo } from './api';
 
 const instance: UserInfo = {
-    pk,
-    createdAt,
-    updatedAt,
     userId,
     userType,
     email,

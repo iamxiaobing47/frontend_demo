@@ -46,8 +46,26 @@ export interface LoginResponse {
     'accessToken'?: string;
     'userInfo'?: UserInfo;
 }
+export interface NavigationDTO {
+    'pk'?: number;
+    'chineseName'?: string;
+    'englishName'?: string;
+    'path'?: string;
+    'icon'?: string;
+    'sortOrder'?: number;
+    'parentId'?: number;
+    'createdAt'?: string;
+    'updatedAt'?: string;
+}
 export interface RefreshTokenRequest {
     'refreshToken': string;
+}
+export interface ResponseListNavigationDTO {
+    'success'?: boolean;
+    'data'?: Array<NavigationDTO>;
+    'messageCode'?: string;
+    'messageArgs'?: Array<string>;
+    'message'?: string;
 }
 export interface ResponseListUserInfo {
     'success'?: boolean;
@@ -91,26 +109,20 @@ export interface UpdateUserRequest {
     'orgId'?: string;
 }
 export interface UserInfo {
-    'pk'?: number;
-    'createdAt'?: string;
-    'updatedAt'?: string;
     'userId'?: string;
     'userType'?: string;
     'email'?: string;
     'userName'?: string;
-    'orgId'?: number;
+    'orgId'?: string;
     'orgName'?: string;
     'orgType'?: string;
 }
 export interface UserInfoEntity {
-    'pk'?: number;
-    'createdAt'?: string;
-    'updatedAt'?: string;
     'userId'?: string;
     'userType'?: string;
     'email'?: string;
     'userName'?: string;
-    'orgId'?: number;
+    'orgId'?: string;
     'orgName'?: string;
     'orgType'?: string;
 }
@@ -828,6 +840,96 @@ export class DefaultApi extends BaseAPI {
      */
     public updateUser(updateUserRequest: UpdateUserRequest, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).updateUser(updateUserRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * NavigationControllerApi - axios parameter creator
+ */
+export const NavigationControllerApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUserNavigations: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/navigations/user`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * NavigationControllerApi - functional programming interface
+ */
+export const NavigationControllerApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = NavigationControllerApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getUserNavigations(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseListNavigationDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getUserNavigations(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['NavigationControllerApi.getUserNavigations']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * NavigationControllerApi - factory interface
+ */
+export const NavigationControllerApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = NavigationControllerApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUserNavigations(options?: RawAxiosRequestConfig): AxiosPromise<ResponseListNavigationDTO> {
+            return localVarFp.getUserNavigations(options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * NavigationControllerApi - object-oriented interface
+ */
+export class NavigationControllerApi extends BaseAPI {
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public getUserNavigations(options?: RawAxiosRequestConfig) {
+        return NavigationControllerApiFp(this.configuration).getUserNavigations(options).then((request) => request(this.axios, this.basePath));
     }
 }
 

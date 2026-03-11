@@ -10,7 +10,10 @@ docs/DefaultApi.md
 docs/DeleteUserRequest.md
 docs/LoginRequest.md
 docs/LoginResponse.md
+docs/NavigationControllerApi.md
+docs/NavigationDTO.md
 docs/RefreshTokenRequest.md
+docs/ResponseListNavigationDTO.md
 docs/ResponseListUserInfo.md
 docs/ResponseLoginResponse.md
 docs/ResponseString.md

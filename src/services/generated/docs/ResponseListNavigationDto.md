@@ -1,4 +1,4 @@
-# ResponseListNavigationDto
+# ResponseListNavigationDTO
 
 
 ## Properties
@@ -6,7 +6,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **success** | **boolean** |  | [optional] [default to undefined]
-**data** | [**Array&lt;NavigationDto&gt;**](NavigationDto.md) |  | [optional] [default to undefined]
+**data** | [**Array&lt;NavigationDTO&gt;**](NavigationDTO.md) |  | [optional] [default to undefined]
 **messageCode** | **string** |  | [optional] [default to undefined]
 **messageArgs** | **Array&lt;string&gt;** |  | [optional] [default to undefined]
 **message** | **string** |  | [optional] [default to undefined]
@@ -14,9 +14,9 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { ResponseListNavigationDto } from './api';
+import { ResponseListNavigationDTO } from './api';
 
-const instance: ResponseListNavigationDto = {
+const instance: ResponseListNavigationDTO = {
     success,
     data,
     messageCode,
