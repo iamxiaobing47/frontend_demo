@@ -1,21 +1,19 @@
-# LoginResponse
+# BatchUserQueryRequest
 
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**accessToken** | **string** |  | [optional] [default to undefined]
-**userInfo** | [**UserInfo**](UserInfo.md) |  | [optional] [default to undefined]
+**userIds** | **Array&lt;string&gt;** |  | [default to undefined]
 
 ## Example
 
 ```typescript
-import { LoginResponse } from './api';
+import { BatchUserQueryRequest } from './api';
 
-const instance: LoginResponse = {
-    accessToken,
-    userInfo,
+const instance: BatchUserQueryRequest = {
+    userIds,
 };
 ```
 

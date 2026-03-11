@@ -1,21 +1,21 @@
-# LoginResponse
+# DeleteUserRequest
 
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**accessToken** | **string** |  | [optional] [default to undefined]
-**userInfo** | [**UserInfo**](UserInfo.md) |  | [optional] [default to undefined]
+**userId** | **string** |  | [optional] [default to undefined]
+**userType** | **string** |  | [optional] [default to undefined]
 
 ## Example
 
 ```typescript
-import { LoginResponse } from './api';
+import { DeleteUserRequest } from './api';
 
-const instance: LoginResponse = {
-    accessToken,
-    userInfo,
+const instance: DeleteUserRequest = {
+    userId,
+    userType,
 };
 ```
 

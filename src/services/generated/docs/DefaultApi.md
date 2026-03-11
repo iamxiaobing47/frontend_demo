@@ -4,17 +4,21 @@ All URIs are relative to *http://localhost:8080*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**createTestUser**](#createtestuser) | **POST** /api/auth/create-test-user | 创建测试用户|
-|[**getCurrentUser**](#getcurrentuser) | **GET** /api/auth/user | 获取当前用户信息|
+|[**batchGetUsers**](#batchgetusers) | **POST** /api/users/batch | 批量查询用户信息|
+|[**createUser**](#createuser) | **POST** /api/users/create | 创建用户|
+|[**deleteUser**](#deleteuser) | **DELETE** /api/users | 删除用户|
+|[**getUser**](#getuser) | **GET** /api/users/{userId} | 获取用户信息|
 |[**login**](#login) | **POST** /api/auth/login | 用户登录|
 |[**logout**](#logout) | **POST** /api/auth/logout | 用户登出|
 |[**refreshToken**](#refreshtoken) | **POST** /api/auth/refresh | 刷新Token|
-|[**test**](#test) | **GET** /api/test | 测试接口|
+|[**test**](#test) | **POST** /api/test | 测试接口|
+|[**test1**](#test1) | **GET** /api/test | 测试接口|
+|[**updateUser**](#updateuser) | **PUT** /api/users | 更新用户信息|
 
-# **createTestUser**
-> ResponseVoid createTestUser(createTestUserRequest)
+# **batchGetUsers**
+> ResponseListUserInfo batchGetUsers(batchUserQueryRequest)
 
-快速创建加密后的测试用户
+根据用户ID列表批量查询用户信息
 
 ### Example
 
@@ -22,16 +26,16 @@ All URIs are relative to *http://localhost:8080*
 import {
     DefaultApi,
     Configuration,
-    CreateTestUserRequest
+    BatchUserQueryRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let createTestUserRequest: CreateTestUserRequest; //
+let batchUserQueryRequest: BatchUserQueryRequest; //
 
-const { status, data } = await apiInstance.createTestUser(
-    createTestUserRequest
+const { status, data } = await apiInstance.batchGetUsers(
+    batchUserQueryRequest
 );
 ```
 
@@ -39,7 +43,59 @@ const { status, data } = await apiInstance.createTestUser(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **createTestUserRequest** | **CreateTestUserRequest**|  | |
+| **batchUserQueryRequest** | **BatchUserQueryRequest**|  | |
+
+
+### Return type
+
+**ResponseListUserInfo**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **createUser**
+> ResponseVoid createUser(createUserRequest)
+
+创建新用户
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    CreateUserRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let createUserRequest: CreateUserRequest; //
+
+const { status, data } = await apiInstance.createUser(
+    createUserRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **createUserRequest** | **CreateUserRequest**|  | |
 
 
 ### Return type
@@ -63,10 +119,62 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getCurrentUser**
-> ResponseUserInfoDto getCurrentUser()
+# **deleteUser**
+> ResponseVoid deleteUser(deleteUserRequest)
 
-获取当前登录用户的基本信息
+删除当前用户
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DeleteUserRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let deleteUserRequest: DeleteUserRequest; //
+
+const { status, data } = await apiInstance.deleteUser(
+    deleteUserRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **deleteUserRequest** | **DeleteUserRequest**|  | |
+
+
+### Return type
+
+**ResponseVoid**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getUser**
+> ResponseUserInfoEntity getUser()
+
+根据用户ID获取用户信息
 
 ### Example
 
@@ -79,16 +187,23 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-const { status, data } = await apiInstance.getCurrentUser();
+let userId: string; // (default to undefined)
+
+const { status, data } = await apiInstance.getUser(
+    userId
+);
 ```
 
 ### Parameters
-This endpoint does not have any parameters.
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **userId** | [**string**] |  | defaults to undefined|
 
 
 ### Return type
 
-**ResponseUserInfoDto**
+**ResponseUserInfoEntity**
 
 ### Authorization
 
@@ -258,6 +373,60 @@ No authorization required
 # **test**
 > ResponseString test()
 
+创建测试用户
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let email: string; // (default to undefined)
+let password: string; // (default to undefined)
+
+const { status, data } = await apiInstance.test(
+    email,
+    password
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **email** | [**string**] |  | defaults to undefined|
+| **password** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**ResponseString**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **test1**
+> ResponseString test1()
+
 返回测试字符串
 
 ### Example
@@ -271,7 +440,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-const { status, data } = await apiInstance.test();
+const { status, data } = await apiInstance.test1();
 ```
 
 ### Parameters
@@ -289,6 +458,58 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **updateUser**
+> ResponseVoid updateUser(updateUserRequest)
+
+更新当前用户信息
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    UpdateUserRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let updateUserRequest: UpdateUserRequest; //
+
+const { status, data } = await apiInstance.updateUser(
+    updateUserRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **updateUserRequest** | **UpdateUserRequest**|  | |
+
+
+### Return type
+
+**ResponseVoid**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
  - **Accept**: */*
 
 
