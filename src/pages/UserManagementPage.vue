@@ -56,11 +56,7 @@
           </v-row>
 
           <v-card-actions>
-            <v-btn
-              color="primary"
-              type="submit"
-              :loading="userStore.createLoading || userStore.updateLoading"
-            >
+            <v-btn color="primary" type="submit" :loading="userStore.loading">
               {{ editing ? '更新用户' : '创建用户' }}
             </v-btn>
             <v-btn v-if="editing" color="secondary" @click="cancelEdit" class="ml-2">
@@ -88,7 +84,7 @@
             <v-btn
               color="primary"
               @click="fetchUser"
-              :loading="userStore.getLoading"
+              :loading="userStore.loading"
               :disabled="!queryUserId"
             >
               查询用户
@@ -110,7 +106,7 @@
             <v-btn
               color="primary"
               @click="batchFetchUsers"
-              :loading="userStore.listLoading"
+              :loading="userStore.loading"
               :disabled="!batchQueryIds"
             >
               批量查询
@@ -131,8 +127,6 @@
           <v-col cols="12" md="6"> <strong>用户类型:</strong> {{ displayedUser.userType }} </v-col>
           <v-col cols="12" md="6"> <strong>组织ID:</strong> {{ displayedUser.orgId }} </v-col>
           <v-col cols="12" md="6"> <strong>组织名称:</strong> {{ displayedUser.orgName }} </v-col>
-          <v-col cols="12" md="6"> <strong>创建时间:</strong> {{ displayedUser.createdAt }} </v-col>
-          <v-col cols="12" md="6"> <strong>更新时间:</strong> {{ displayedUser.updatedAt }} </v-col>
         </v-row>
 
         <v-card-actions>
@@ -172,27 +166,8 @@
     </v-card>
 
     <!-- 错误提示 -->
-    <v-alert
-      v-if="
-        userStore.error ||
-        userStore.createError ||
-        userStore.updateError ||
-        userStore.deleteError ||
-        userStore.listError ||
-        userStore.getError
-      "
-      type="error"
-      variant="tonal"
-      class="mt-4"
-    >
-      {{
-        userStore.error ||
-        userStore.createError ||
-        userStore.updateError ||
-        userStore.deleteError ||
-        userStore.listError ||
-        userStore.getError
-      }}
+    <v-alert v-if="userStore.error" type="error" variant="tonal" class="mt-4">
+      {{ userStore.error }}
     </v-alert>
 
     <!-- 成功提示 -->
@@ -215,7 +190,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="secondary" @click="showDeleteDialog = false">取消</v-btn>
-          <v-btn color="error" @click="handleDelete" :loading="userStore.deleteLoading">删除</v-btn>
+          <v-btn color="error" @click="handleDelete" :loading="userStore.loading">删除</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -289,43 +264,10 @@ onMounted(() => {
   appStore.setBreadcrumbs([{ title: '用户管理' }])
 })
 
-// 监听store中的数据变化
-watch(
-  () => userStore.getData,
-  newData => {
-    if (newData?.data) {
-      displayedUser.value = newData.data
-    }
-  }
-)
+// 监听store中的数据变化 - REMOVED because userStore no longer exposes these properties
+// The API calls now return data directly, so we handle it in the calling functions
 
-watch(
-  () => userStore.listData,
-  newData => {
-    if (newData?.data) {
-      batchUsers.value = newData.data
-    }
-  }
-)
-
-// 监听操作成功状态
-watch(
-  () => [userStore.createData, userStore.updateData, userStore.deleteData],
-  () => {
-    if (
-      (userStore.createData && userStore.createData.success) ||
-      (userStore.updateData && userStore.updateData.success) ||
-      (userStore.deleteData && userStore.deleteData.success)
-    ) {
-      operationSuccess.value = true
-      // 重置表单
-      resetForm()
-      // 清除显示的用户
-      displayedUser.value = null
-      batchUsers.value = []
-    }
-  }
-)
+// 监听操作成功状态 - REMOVED because userStore no longer exposes these properties
 
 // 处理表单提交
 const handleSubmit = async () => {
@@ -357,7 +299,16 @@ const handleSubmit = async () => {
 // 查询单个用户
 const fetchUser = async () => {
   if (!queryUserId.value) return
-  await userStore.fetchUserById(queryUserId.value)
+
+  try {
+    const response = await userStore.fetchUserById(queryUserId.value)
+    if (response.data?.data) {
+      displayedUser.value = response.data.data
+    }
+  } catch (error) {
+    // Error is handled by httpClient interceptor
+    console.error('Failed to fetch user:', error)
+  }
 }
 
 // 批量查询用户
@@ -368,7 +319,15 @@ const batchFetchUsers = async () => {
     .map(id => id.trim())
     .filter(id => id.length > 0)
   if (userIds.length > 0) {
-    await userStore.batchGetUsers(userIds)
+    try {
+      const response = await userStore.batchGetUsers(userIds)
+      if (response.data?.data) {
+        batchUsers.value = response.data.data
+      }
+    } catch (error) {
+      // Error is handled by httpClient interceptor
+      console.error('Failed to batch fetch users:', error)
+    }
   }
 }
 
@@ -413,13 +372,18 @@ const confirmDelete = (userId: string) => {
 // 处理删除
 const handleDelete = async () => {
   if (userToDelete.value) {
-    await userStore.deleteUser(userToDelete.value)
-    if (userStore.deleteData?.success) {
+    try {
+      await userStore.deleteUser(userToDelete.value)
+      // If no error is thrown, assume success
       showDeleteDialog.value = false
       userToDelete.value = null
       displayedUser.value = null
       // 从批量列表中移除已删除的用户
       batchUsers.value = batchUsers.value.filter(user => user.userId !== userToDelete.value)
+      operationSuccess.value = true
+    } catch (error) {
+      // Error is handled by httpClient interceptor
+      console.error('Failed to delete user:', error)
     }
   }
 }
