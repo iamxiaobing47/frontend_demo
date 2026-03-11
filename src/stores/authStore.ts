@@ -11,6 +11,9 @@ interface UserInfo {
   locationId?: string
 }
 
+// 从后端API导入UserInfo类型
+import type { UserInfo as BackendUserInfo } from '@/services/generated/api'
+
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: (() => {
@@ -58,23 +61,26 @@ export const useAuthStore = defineStore('auth', {
 
       // 获取完整的用户信息并存储
       const user = loginData.userInfo
-      this.userInfo = user
-      localStorage.setItem('userInfo', JSON.stringify(user))
+      if (user) {
+        this.userInfo = {
+          username: user.userName || '',
+          email: user.email || '',
+          role: user.userType === 'BUSINESS_USER' ? 'business_owner' : 'employee',
+          businessOwnerId: user.orgId,
+          locationId: user.orgId,
+        }
+        localStorage.setItem('userInfo', JSON.stringify(this.userInfo))
+      }
 
-      // // 设置用户角色并获取用户特定菜单
-      // const menuStore = useMenuStore()
-      // menuStore.setUserRole(
-      //   user.role as 'employee' | 'business_owner',
-      //   user.businessOwnerId,
-      //   user.locationId
-      // )
+      // 设置用户角色并获取用户特定菜单
+      const menuStore = useMenuStore()
 
-      // // 获取用户特定菜单
-      // await menuStore.fetchUserMenus()
+      // 获取用户特定菜单
+      await menuStore.fetchUserMenus()
 
-      // // 根据菜单生成动态路由
-      // const { generateRoutesFromMenus } = await import('@/router')
-      // generateRoutesFromMenus(menuStore.menus)
+      // 根据菜单生成动态路由
+      const { generateRoutesFromMenus } = await import('@/router')
+      generateRoutesFromMenus(menuStore.menus)
     },
 
     async logout(): Promise<void> {
@@ -138,55 +144,20 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async fetchCurrentUser(): Promise<UserInfo> {
-      try {
-        // 使用生成的 API 类，但传入自定义的 httpClient
-        // 传入空字符串作为 basePath，让请求使用相对路径（通过 Vite 代理）
-        const api = new DefaultApi(undefined, '', apiClient)
-        const response = await api.getCurrentUser()
-
-        if (response.data.success && response.data.data) {
-          const userData = response.data.data
-          return {
-            username: userData.username || '',
-            email: userData.email || '',
-            role: (userData.role as 'employee' | 'business_owner') || 'employee',
-            businessOwnerId: userData.businessOwnerId,
-            locationId: userData.locationId,
-          }
-        } else {
-          // 如果获取用户信息失败，使用已有的本地存储信息
-          const storedUserInfo = localStorage.getItem('userInfo')
-          if (storedUserInfo) {
-            const parsed = JSON.parse(storedUserInfo)
-            // 确保返回的用户信息符合 UserInfo 接口
-            return {
-              username: parsed.username || '',
-              email: parsed.email || '',
-              role: (parsed.role as 'employee' | 'business_owner') || 'employee',
-              businessOwnerId: parsed.businessOwnerId,
-              locationId: parsed.locationId,
-            }
-          } else {
-            throw new Error(response.data.message || 'Failed to fetch user info')
-          }
+      // 直接返回本地存储的用户信息
+      const storedUserInfo = localStorage.getItem('userInfo')
+      if (storedUserInfo) {
+        const parsed = JSON.parse(storedUserInfo)
+        // 确保返回的用户信息符合 UserInfo 接口
+        return {
+          username: parsed.username || '',
+          email: parsed.email || '',
+          role: (parsed.role as 'employee' | 'business_owner') || 'employee',
+          businessOwnerId: parsed.businessOwnerId,
+          locationId: parsed.locationId,
         }
-      } catch (error) {
-        console.error('Failed to fetch current user info:', error)
-        // 如果获取失败，使用本地存储的用户信息
-        const storedUserInfo = localStorage.getItem('userInfo')
-        if (storedUserInfo) {
-          const parsed = JSON.parse(storedUserInfo)
-          // 确保返回的用户信息符合 UserInfo 接口
-          return {
-            username: parsed.username || '',
-            email: parsed.email || '',
-            role: (parsed.role as 'employee' | 'business_owner') || 'employee',
-            businessOwnerId: parsed.businessOwnerId,
-            locationId: parsed.locationId,
-          }
-        } else {
-          throw error
-        }
+      } else {
+        throw new Error('No user info found in local storage')
       }
     },
   },

@@ -22,11 +22,7 @@
           <v-list-item prepend-icon="mdi-account" title="Profile" />
           <v-list-item prepend-icon="mdi-cog" title="Settings" />
           <v-divider />
-          <v-list-item
-            prepend-icon="mdi-logout"
-            title="Logout"
-            @click="handleLogout"
-          />
+          <v-list-item prepend-icon="mdi-logout" title="Logout" @click="handleLogout" />
         </v-list>
       </v-menu>
     </v-app-bar>
@@ -45,35 +41,46 @@
           <v-list-item-title class="text-grey"> 无可用菜单 </v-list-item-title>
         </v-list-item>
 
-        <!-- Render the menu items -->
-        <template v-else v-for="item in menuItems" :key="item.id">
+        <!-- Render menu items when not loading and menus are available -->
+        <template v-else>
+          <!-- Always show Home page first -->
           <v-list-item
-            v-if="!item.children || item.children.length === 0"
-            :to="item.path"
-            :prepend-icon="item.icon || getIcon(item.id)"
-            :title="item.title"
-            :value="item.id"
+            to="/home"
+            prepend-icon="mdi-home"
+            title="首页"
+            value="home"
             color="primary"
           />
-          <v-list-group v-else>
-            <template #activator="{ props }">
-              <v-list-item
-                v-bind="props"
-                :prepend-icon="item.icon || getIcon(item.id)"
-                :title="item.title"
-              />
-            </template>
+          <!-- Render the menu items -->
+          <template v-for="item in menuItems" :key="item.id">
             <v-list-item
-              v-for="child in item.children"
-              :key="child.id"
-              :to="child.path"
-              :prepend-icon="child.icon || getIcon(child.id)"
-              :title="child.title"
-              :value="child.id"
+              v-if="!item.children || item.children.length === 0"
+              :to="item.path"
+              :prepend-icon="item.icon || getIcon(item.id)"
+              :title="item.title"
+              :value="item.id"
               color="primary"
-              style="padding-left: 40px"
             />
-          </v-list-group>
+            <v-list-group v-else>
+              <template #activator="{ props }">
+                <v-list-item
+                  v-bind="props"
+                  :prepend-icon="item.icon || getIcon(item.id)"
+                  :title="item.title"
+                />
+              </template>
+              <v-list-item
+                v-for="child in item.children"
+                :key="child.id"
+                :to="child.path"
+                :prepend-icon="child.icon || getIcon(child.id)"
+                :title="child.title"
+                :value="child.id"
+                color="primary"
+                style="padding-left: 40px"
+              />
+            </v-list-group>
+          </template>
         </template>
       </v-list>
     </v-navigation-drawer>
@@ -87,44 +94,44 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { useAppStore } from "@/stores/appStore";
-import { useAuthStore } from "@/stores/authStore";
-import { useMenuStore } from "@/stores/menuStore";
-import { useRouter } from "vue-router";
+import { computed } from 'vue'
+import { useAppStore } from '@/stores/appStore'
+import { useAuthStore } from '@/stores/authStore'
+import { useMenuStore } from '@/stores/menuStore'
+import { useRouter } from 'vue-router'
 
-const appStore = useAppStore();
-const authStore = useAuthStore();
-const menuStore = useMenuStore();
-const router = useRouter();
+const appStore = useAppStore()
+const authStore = useAuthStore()
+const menuStore = useMenuStore()
+const router = useRouter()
 
 // Use dynamic menu from store instead of router-based menu
 const menuItems = computed(() => {
-  return menuStore.getUserMenus;
-});
+  return menuStore.getUserMenus
+})
 
 const getIcon = (id: string) => {
   const iconMap: Record<string, string> = {
-    home: "mdi-home",
-    about: "mdi-information",
-    user: "mdi-account",
-    settings: "mdi-cog",
-    dashboard: "mdi-view-dashboard",
-    projectlist: "mdi-folder-multiple",
-    template: "mdi-download",
-    upload: "mdi-upload",
-    result: "mdi-file-document",
-  };
-  return iconMap[id.toLowerCase()] || "mdi-page-next";
-};
+    home: 'mdi-home',
+    about: 'mdi-information',
+    user: 'mdi-account',
+    settings: 'mdi-cog',
+    dashboard: 'mdi-view-dashboard',
+    projectlist: 'mdi-folder-multiple',
+    template: 'mdi-download',
+    upload: 'mdi-upload',
+    result: 'mdi-file-document',
+  }
+  return iconMap[id.toLowerCase()] || 'mdi-page-next'
+}
 
 const handleLogout = async () => {
-  await authStore.logout();
-  router.push("/login");
-};
+  await authStore.logout()
+  router.push('/login')
+}
 
 const goHome = () => {
-  appStore.navigation = false;
-  router.push("/home");
-};
+  appStore.navigation = false
+  router.push('/home')
+}
 </script>
