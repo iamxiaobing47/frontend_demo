@@ -5,8 +5,6 @@ import { useAuthStore } from '@/stores/authStore'
 // Eager load all pages
 const modules = import.meta.glob('@/pages/**/*.vue', { eager: true })
 
-// No title mapping needed - use filename directly as title
-
 // Define static routes that don't depend on user permissions
 const staticRoutes: RouteRecordRaw[] = [
   {
@@ -43,14 +41,6 @@ for (const path in pagesDir) {
     meta: { requiresAuth: true },
   }
   mainLayoutRoute.children.push(route)
-}
-
-// Function to generate routes from menu data - NO LONGER NEEDED
-// Menu permissions are now handled purely by navigation display logic
-export function generateRoutesFromMenus(_menus: any[]) {
-  // This function is kept for compatibility but does nothing
-  // All routes are pre-defined, menu only controls visibility in navigation
-  console.log('Menu-based route generation is deprecated. Routes are now pre-defined.')
 }
 
 const router = createRouter({

@@ -6,7 +6,6 @@ import { useMenuStore } from '@/stores/menuStore'
 interface UserInfo {
   username: string
   email: string
-  role: 'employee' | 'business_owner'
   businessOwnerId?: string
   locationId?: string
 }
@@ -62,7 +61,6 @@ export const useAuthStore = defineStore('auth', {
         this.userInfo = {
           username: user.userName || '',
           email: user.email || '',
-          role: user.userType === 'BUSINESS_USER' ? 'business_owner' : 'employee',
           businessOwnerId: user.orgId,
           locationId: user.orgId,
         }
@@ -145,7 +143,6 @@ export const useAuthStore = defineStore('auth', {
         return {
           username: parsed.username || '',
           email: parsed.email || '',
-          role: (parsed.role as 'employee' | 'business_owner') || 'employee',
           businessOwnerId: parsed.businessOwnerId,
           locationId: parsed.locationId,
         }

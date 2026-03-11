@@ -13,7 +13,6 @@ export interface MenuItem {
 
 interface MenuState {
   menus: MenuItem[]
-  userRole: 'employee' | 'business_owner' | null
   businessOwnerId: string | null
   locationId: string | null
   loading: boolean
@@ -23,7 +22,6 @@ interface MenuState {
 export const useMenuStore = defineStore('menu', {
   state: (): MenuState => ({
     menus: [],
-    userRole: null,
     businessOwnerId: null,
     locationId: null,
     loading: false,
@@ -59,23 +57,12 @@ export const useMenuStore = defineStore('menu', {
       this.initialized = true
     },
 
-    setUserRole(
-      role: 'employee' | 'business_owner',
-      businessOwnerId?: string,
-      locationId?: string
-    ) {
-      this.userRole = role
-      this.businessOwnerId = businessOwnerId || null
-      this.locationId = locationId || null
-    },
-
     setLoading(loading: boolean) {
       this.loading = loading
     },
 
     clearMenus() {
       this.menus = []
-      this.userRole = null
       this.businessOwnerId = null
       this.locationId = null
       this.initialized = false
