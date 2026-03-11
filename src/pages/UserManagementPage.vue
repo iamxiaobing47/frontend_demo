@@ -301,12 +301,32 @@ const fetchUser = async () => {
   if (!queryUserId.value) return
 
   try {
+    userStore.error = '' // 清除之前的错误
     const response = await userStore.fetchUserById(queryUserId.value)
     if (response.data?.data) {
       displayedUser.value = response.data.data
+    } else {
+      // API返回成功但没有数据
+      displayedUser.value = null
+      userStore.error = '未找到指定的用户'
     }
-  } catch (error) {
-    // Error is handled by httpClient interceptor
+  } catch (error: any) {
+    // 处理不同类型的错误
+    if (error.response?.status === 404) {
+      // 用户不存在的错误
+      displayedUser.value = null
+      userStore.error = '未找到指定的用户'
+    } else if (error.response?.status === 401) {
+      // 认证失败，但我们需要保持在当前页面显示错误
+      // 而不是让httpClient拦截器跳转到登录页
+      displayedUser.value = null
+      userStore.error = '认证已过期，请重新登录'
+      // 注意：这里不跳转，让用户看到错误信息
+    } else {
+      // 其他错误
+      displayedUser.value = null
+      userStore.error = error.message || '查询用户失败'
+    }
     console.error('Failed to fetch user:', error)
   }
 }
@@ -320,12 +340,32 @@ const batchFetchUsers = async () => {
     .filter(id => id.length > 0)
   if (userIds.length > 0) {
     try {
+      userStore.error = '' // 清除之前的错误
       const response = await userStore.batchGetUsers(userIds)
       if (response.data?.data) {
         batchUsers.value = response.data.data
+      } else {
+        // API返回成功但没有数据
+        batchUsers.value = []
+        userStore.error = '未找到指定的用户'
       }
-    } catch (error) {
-      // Error is handled by httpClient interceptor
+    } catch (error: any) {
+      // 处理不同类型的错误
+      if (error.response?.status === 404) {
+        // 用户不存在的错误
+        batchUsers.value = []
+        userStore.error = '未找到指定的用户'
+      } else if (error.response?.status === 401) {
+        // 认证失败，但我们需要保持在当前页面显示错误
+        // 而不是让httpClient拦截器跳转到登录页
+        batchUsers.value = []
+        userStore.error = '认证已过期，请重新登录'
+        // 注意：这里不跳转，让用户看到错误信息
+      } else {
+        // 其他错误
+        batchUsers.value = []
+        userStore.error = error.message || '批量查询用户失败'
+      }
       console.error('Failed to batch fetch users:', error)
     }
   }
