@@ -5,6 +5,7 @@ base.ts
 common.ts
 configuration.ts
 docs/BatchUserQueryRequest.md
+docs/ChangePasswordRequest.md
 docs/CreateUserRequest.md
 docs/DefaultApi.md
 docs/DeleteUserRequest.md
@@ -12,10 +13,12 @@ docs/LoginRequest.md
 docs/LoginResponse.md
 docs/NavigationControllerApi.md
 docs/NavigationDTO.md
-docs/RefreshTokenRequest.md
+docs/PageResultUserInfo.md
+docs/PageUserQueryRequest.md
 docs/ResponseListNavigationDTO.md
 docs/ResponseListUserInfo.md
 docs/ResponseLoginResponse.md
+docs/ResponsePageResultUserInfo.md
 docs/ResponseString.md
 docs/ResponseUserInfoEntity.md
 docs/ResponseVoid.md

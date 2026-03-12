@@ -1,6 +1,6 @@
 <template>
   <v-sheet border rounded>
-    <v-data-table
+    <v-data-table-server
       :headers="headers"
       :items="userStore.users"
       :loading="userStore.loading"
@@ -45,13 +45,7 @@
             @click="handleSearch"
           ></v-btn>
 
-          <v-btn
-            prepend-icon="mdi-plus"
-            rounded="lg"
-            text="添加用户"
-            border
-            @click="add"
-          ></v-btn>
+          <v-btn prepend-icon="mdi-plus" rounded="lg" text="添加用户" border @click="add"></v-btn>
         </v-toolbar>
       </template>
 
@@ -65,8 +59,12 @@
 
       <template v-slot:item.userType="{ value }">
         <v-chip
-          :text="value === 'BUSINESS_USER' ? '商户用户' : value === 'STAFF_USER' ? '员工用户' : value"
-          :color="value === 'BUSINESS_USER' ? 'primary' : value === 'STAFF_USER' ? 'success' : 'default'"
+          :text="
+            value === 'BUSINESS_USER' ? '商户用户' : value === 'STAFF_USER' ? '员工用户' : value
+          "
+          :color="
+            value === 'BUSINESS_USER' ? 'primary' : value === 'STAFF_USER' ? 'success' : 'default'
+          "
           size="small"
         ></v-chip>
       </template>
@@ -99,7 +97,7 @@
           @click="loadUsers"
         ></v-btn>
       </template>
-    </v-data-table>
+    </v-data-table-server>
   </v-sheet>
 
   <!-- 添加/编辑用户对话框 -->
@@ -173,7 +171,8 @@
   <v-dialog v-model="deleteDialog" max-width="400">
     <v-card title="确认删除">
       <template v-slot:text>
-        确定要删除用户 <span class="font-weight-bold">{{ deleteUserEmail }}</span> 吗？此操作不可恢复。
+        确定要删除用户
+        <span class="font-weight-bold">{{ deleteUserEmail }}</span> 吗？此操作不可恢复。
       </template>
 
       <v-divider></v-divider>
@@ -298,8 +297,14 @@ const doDelete = async () => {
 
   deleting.value = true
   try {
-    await userStore.deleteUser(deleteUserItem.value.userId || '', deleteUserItem.value.userType || '')
-    await loadUsers({ page: userStore.pagination.pageNum, itemsPerPage: userStore.pagination.pageSize })
+    await userStore.deleteUser(
+      deleteUserItem.value.userId || '',
+      deleteUserItem.value.userType || ''
+    )
+    await loadUsers({
+      page: userStore.pagination.pageNum,
+      itemsPerPage: userStore.pagination.pageSize,
+    })
     deleteDialog.value = false
   } catch (error: any) {
     console.error('删除失败:', error)
@@ -335,7 +340,10 @@ const save = async () => {
     }
 
     dialog.value = false
-    await loadUsers({ page: userStore.pagination.pageNum, itemsPerPage: userStore.pagination.pageSize })
+    await loadUsers({
+      page: userStore.pagination.pageNum,
+      itemsPerPage: userStore.pagination.pageSize,
+    })
   } catch (error: any) {
     console.error('保存失败:', error)
   } finally {

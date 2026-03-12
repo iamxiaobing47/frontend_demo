@@ -26,6 +26,10 @@ import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerM
 export interface BatchUserQueryRequest {
     'userIds': Array<string>;
 }
+export interface ChangePasswordRequest {
+    'currentPassword': string;
+    'newPassword': string;
+}
 export interface CreateUserRequest {
     'email': string;
     'password': string;
@@ -57,8 +61,21 @@ export interface NavigationDTO {
     'createdAt'?: string;
     'updatedAt'?: string;
 }
-export interface RefreshTokenRequest {
-    'refreshToken': string;
+export interface PageResultUserInfo {
+    'records'?: Array<UserInfo>;
+    'total'?: number;
+    'pageNum'?: number;
+    'pageSize'?: number;
+    'pages'?: number;
+    'hasPrevious'?: boolean;
+    'hasNext'?: boolean;
+}
+export interface PageUserQueryRequest {
+    'pageNum': number;
+    'pageSize': number;
+    'userType'?: string;
+    'email'?: string;
+    'userName'?: string;
 }
 export interface ResponseListNavigationDTO {
     'success'?: boolean;
@@ -77,6 +94,13 @@ export interface ResponseListUserInfo {
 export interface ResponseLoginResponse {
     'success'?: boolean;
     'data'?: LoginResponse;
+    'messageCode'?: string;
+    'messageArgs'?: Array<string>;
+    'message'?: string;
+}
+export interface ResponsePageResultUserInfo {
+    'success'?: boolean;
+    'data'?: PageResultUserInfo;
     'messageCode'?: string;
     'messageArgs'?: Array<string>;
     'message'?: string;
@@ -126,29 +150,6 @@ export interface UserInfoEntity {
     'orgName'?: string;
     'orgType'?: string;
 }
-export interface PageUserQueryRequest {
-    'pageNum': number;
-    'pageSize': number;
-    'userType'?: string;
-    'email'?: string;
-    'userName'?: string;
-}
-export interface PageResultUserInfo {
-    'records'?: Array<UserInfo>;
-    'total'?: number;
-    'pageNum'?: number;
-    'pageSize'?: number;
-    'pages'?: number;
-    'hasPrevious'?: boolean;
-    'hasNext'?: boolean;
-}
-export interface ResponsePageResultUserInfo {
-    'success'?: boolean;
-    'data'?: PageResultUserInfo;
-    'messageCode'?: string;
-    'messageArgs'?: Array<string>;
-    'message'?: string;
-}
 
 /**
  * DefaultApi - axios parameter creator
@@ -184,6 +185,85 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(batchUserQueryRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 修改当前用户密码
+         * @summary 修改密码
+         * @param {ChangePasswordRequest} changePasswordRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        changePassword: async (changePasswordRequest: ChangePasswordRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'changePasswordRequest' is not null or undefined
+            assertParamExists('changePassword', 'changePasswordRequest', changePasswordRequest)
+            const localVarPath = `/api/password`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(changePasswordRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 创建测试用户
+         * @summary 测试接口
+         * @param {string} email 
+         * @param {string} password 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        createTestUser: async (email: string, password: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'email' is not null or undefined
+            assertParamExists('createTestUser', 'email', email)
+            // verify required parameter 'password' is not null or undefined
+            assertParamExists('createTestUser', 'password', password)
+            const localVarPath = `/api/test`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (email !== undefined) {
+                localVarQueryParameter['email'] = email;
+            }
+
+            if (password !== undefined) {
+                localVarQueryParameter['password'] = password;
+            }
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -254,38 +334,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(deleteUserRequest, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 分页查询用户列表
-         * @summary 分页查询用户列表
-         * @param {PageUserQueryRequest} pageUserQueryRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        pageUsers: async (pageUserQueryRequest: PageUserQueryRequest = {} as PageUserQueryRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/users/page`;
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-            localVarHeaderParameter['Accept'] = '*/*';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(pageUserQueryRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -392,14 +440,16 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * 使用refresh token获取新的access token
-         * @summary 刷新Token
-         * @param {RefreshTokenRequest} refreshTokenRequest 
+         * 根据分页参数和筛选条件查询用户列表
+         * @summary 分页查询用户列表
+         * @param {PageUserQueryRequest} pageUserQueryRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        refreshToken: async (refreshTokenRequest: RefreshTokenRequest = {} as RefreshTokenRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/auth/refresh`;
+        pageUsers: async (pageUserQueryRequest: PageUserQueryRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'pageUserQueryRequest' is not null or undefined
+            assertParamExists('pageUsers', 'pageUserQueryRequest', pageUserQueryRequest)
+            const localVarPath = `/api/users/page`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -417,7 +467,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(refreshTokenRequest, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(pageUserQueryRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -425,19 +475,13 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * 创建测试用户
-         * @summary 测试接口
-         * @param {string} email 
-         * @param {string} password 
+         * 使用 refresh token 获取新的 access token
+         * @summary 刷新 Token
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        test: async (email: string, password: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'email' is not null or undefined
-            assertParamExists('test', 'email', email)
-            // verify required parameter 'password' is not null or undefined
-            assertParamExists('test', 'password', password)
-            const localVarPath = `/api/test`;
+        refreshToken: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/auth/refresh`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -448,14 +492,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
-
-            if (email !== undefined) {
-                localVarQueryParameter['email'] = email;
-            }
-
-            if (password !== undefined) {
-                localVarQueryParameter['password'] = password;
-            }
 
             localVarHeaderParameter['Accept'] = '*/*';
 
@@ -474,7 +510,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        test1: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        test: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/test`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -556,6 +592,33 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * 修改当前用户密码
+         * @summary 修改密码
+         * @param {ChangePasswordRequest} changePasswordRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async changePassword(changePasswordRequest: ChangePasswordRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseVoid>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.changePassword(changePasswordRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.changePassword']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 创建测试用户
+         * @summary 测试接口
+         * @param {string} email 
+         * @param {string} password 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async createTestUser(email: string, password: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseString>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.createTestUser(email, password, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.createTestUser']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * 创建新用户
          * @summary 创建用户
          * @param {CreateUserRequest} createUserRequest 
@@ -588,19 +651,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        /**
-         * 分页查询用户列表
-         * @summary 分页查询用户列表
-         * @param {PageUserQueryRequest} pageUserQueryRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async pageUsers(pageUserQueryRequest: PageUserQueryRequest = {} as PageUserQueryRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponsePageResultUserInfo>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.pageUsers(pageUserQueryRequest, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.pageUsers']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
         async getUser(userId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseUserInfoEntity>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getUser(userId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
@@ -633,30 +683,28 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 使用refresh token获取新的access token
-         * @summary 刷新Token
-         * @param {RefreshTokenRequest} refreshTokenRequest 
+         * 根据分页参数和筛选条件查询用户列表
+         * @summary 分页查询用户列表
+         * @param {PageUserQueryRequest} pageUserQueryRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async refreshToken(refreshTokenRequest: RefreshTokenRequest = {} as RefreshTokenRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseLoginResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.refreshToken(refreshTokenRequest, options);
+        async pageUsers(pageUserQueryRequest: PageUserQueryRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponsePageResultUserInfo>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.pageUsers(pageUserQueryRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.refreshToken']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.pageUsers']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 创建测试用户
-         * @summary 测试接口
-         * @param {string} email 
-         * @param {string} password 
+         * 使用 refresh token 获取新的 access token
+         * @summary 刷新 Token
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async test(email: string, password: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseString>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.test(email, password, options);
+        async refreshToken(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseLoginResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.refreshToken(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.test']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.refreshToken']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -665,10 +713,10 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async test1(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseString>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.test1(options);
+        async test(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseString>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.test(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.test1']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.test']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -702,6 +750,27 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         batchGetUsers(batchUserQueryRequest: BatchUserQueryRequest, options?: RawAxiosRequestConfig): AxiosPromise<ResponseListUserInfo> {
             return localVarFp.batchGetUsers(batchUserQueryRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 修改当前用户密码
+         * @summary 修改密码
+         * @param {ChangePasswordRequest} changePasswordRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        changePassword(changePasswordRequest: ChangePasswordRequest, options?: RawAxiosRequestConfig): AxiosPromise<ResponseVoid> {
+            return localVarFp.changePassword(changePasswordRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 创建测试用户
+         * @summary 测试接口
+         * @param {string} email 
+         * @param {string} password 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        createTestUser(email: string, password: string, options?: RawAxiosRequestConfig): AxiosPromise<ResponseString> {
+            return localVarFp.createTestUser(email, password, options).then((request) => request(axios, basePath));
         },
         /**
          * 创建新用户
@@ -753,25 +822,23 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.logout(options).then((request) => request(axios, basePath));
         },
         /**
-         * 使用refresh token获取新的access token
-         * @summary 刷新Token
-         * @param {RefreshTokenRequest} refreshTokenRequest 
+         * 根据分页参数和筛选条件查询用户列表
+         * @summary 分页查询用户列表
+         * @param {PageUserQueryRequest} pageUserQueryRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        refreshToken(refreshTokenRequest: RefreshTokenRequest = {} as RefreshTokenRequest, options?: RawAxiosRequestConfig): AxiosPromise<ResponseLoginResponse> {
-            return localVarFp.refreshToken(refreshTokenRequest, options).then((request) => request(axios, basePath));
+        pageUsers(pageUserQueryRequest: PageUserQueryRequest, options?: RawAxiosRequestConfig): AxiosPromise<ResponsePageResultUserInfo> {
+            return localVarFp.pageUsers(pageUserQueryRequest, options).then((request) => request(axios, basePath));
         },
         /**
-         * 创建测试用户
-         * @summary 测试接口
-         * @param {string} email 
-         * @param {string} password 
+         * 使用 refresh token 获取新的 access token
+         * @summary 刷新 Token
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        test(email: string, password: string, options?: RawAxiosRequestConfig): AxiosPromise<ResponseString> {
-            return localVarFp.test(email, password, options).then((request) => request(axios, basePath));
+        refreshToken(options?: RawAxiosRequestConfig): AxiosPromise<ResponseLoginResponse> {
+            return localVarFp.refreshToken(options).then((request) => request(axios, basePath));
         },
         /**
          * 返回测试字符串
@@ -779,8 +846,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        test1(options?: RawAxiosRequestConfig): AxiosPromise<ResponseString> {
-            return localVarFp.test1(options).then((request) => request(axios, basePath));
+        test(options?: RawAxiosRequestConfig): AxiosPromise<ResponseString> {
+            return localVarFp.test(options).then((request) => request(axios, basePath));
         },
         /**
          * 更新当前用户信息
@@ -808,6 +875,29 @@ export class DefaultApi extends BaseAPI {
      */
     public batchGetUsers(batchUserQueryRequest: BatchUserQueryRequest, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).batchGetUsers(batchUserQueryRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 修改当前用户密码
+     * @summary 修改密码
+     * @param {ChangePasswordRequest} changePasswordRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public changePassword(changePasswordRequest: ChangePasswordRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).changePassword(changePasswordRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 创建测试用户
+     * @summary 测试接口
+     * @param {string} email 
+     * @param {string} password 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public createTestUser(email: string, password: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).createTestUser(email, password, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -839,17 +929,6 @@ export class DefaultApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    /**
-     * 分页查询用户列表
-     * @summary 分页查询用户列表
-     * @param {PageUserQueryRequest} pageUserQueryRequest 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public pageUsers(pageUserQueryRequest: PageUserQueryRequest = {} as PageUserQueryRequest, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).pageUsers(pageUserQueryRequest, options).then((request) => request(this.axios, this.basePath));
-    }
-
     public getUser(userId: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).getUser(userId, options).then((request) => request(this.axios, this.basePath));
     }
@@ -876,26 +955,24 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
-     * 使用refresh token获取新的access token
-     * @summary 刷新Token
-     * @param {RefreshTokenRequest} refreshTokenRequest 
+     * 根据分页参数和筛选条件查询用户列表
+     * @summary 分页查询用户列表
+     * @param {PageUserQueryRequest} pageUserQueryRequest 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public refreshToken(refreshTokenRequest: RefreshTokenRequest = {} as RefreshTokenRequest, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).refreshToken(refreshTokenRequest, options).then((request) => request(this.axios, this.basePath));
+    public pageUsers(pageUserQueryRequest: PageUserQueryRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).pageUsers(pageUserQueryRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * 创建测试用户
-     * @summary 测试接口
-     * @param {string} email 
-     * @param {string} password 
+     * 使用 refresh token 获取新的 access token
+     * @summary 刷新 Token
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public test(email: string, password: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).test(email, password, options).then((request) => request(this.axios, this.basePath));
+    public refreshToken(options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).refreshToken(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -904,8 +981,8 @@ export class DefaultApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public test1(options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).test1(options).then((request) => request(this.axios, this.basePath));
+    public test(options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).test(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

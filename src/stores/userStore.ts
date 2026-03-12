@@ -62,15 +62,20 @@ export const useUserStore = defineStore('user', () => {
       const response = await api.pageUsers(request)
       const pageResult = response.data.data as PageResultUserInfo
 
+      console.log('PageResult:', pageResult)
+      console.log('Total:', pageResult?.total)
+
       users.value = pageResult.records || []
-      pagination.value = {
-        pageNum: pageResult.pageNum || 1,
-        pageSize: pageResult.pageSize || 10,
-        total: pageResult.total || 0,
-        pages: pageResult.pages || 0,
-        hasPrevious: pageResult.hasPrevious || false,
-        hasNext: pageResult.hasNext || false,
-      }
+
+      // 使用 Object.assign 确保响应式更新
+      Object.assign(pagination.value, {
+        pageNum: Number(pageResult.pageNum) || 1,
+        pageSize: Number(pageResult.pageSize) || 10,
+        total: Number(pageResult.total) || 0,
+        pages: Number(pageResult.pages) || 0,
+        hasPrevious: Boolean(pageResult.hasPrevious),
+        hasNext: Boolean(pageResult.hasNext),
+      })
 
       loading.value = false
     } catch (err: any) {

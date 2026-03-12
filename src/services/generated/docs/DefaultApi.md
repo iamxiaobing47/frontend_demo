@@ -5,14 +5,16 @@ All URIs are relative to *http://localhost:8080*
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
 |[**batchGetUsers**](#batchgetusers) | **POST** /api/users/batch | 批量查询用户信息|
+|[**changePassword**](#changepassword) | **PUT** /api/password | 修改密码|
+|[**createTestUser**](#createtestuser) | **POST** /api/test | 测试接口|
 |[**createUser**](#createuser) | **POST** /api/users/create | 创建用户|
 |[**deleteUser**](#deleteuser) | **DELETE** /api/users | 删除用户|
 |[**getUser**](#getuser) | **GET** /api/users/{userId} | 获取用户信息|
 |[**login**](#login) | **POST** /api/auth/login | 用户登录|
 |[**logout**](#logout) | **POST** /api/auth/logout | 用户登出|
-|[**refreshToken**](#refreshtoken) | **POST** /api/auth/refresh | 刷新Token|
-|[**test**](#test) | **POST** /api/test | 测试接口|
-|[**test1**](#test1) | **GET** /api/test | 测试接口|
+|[**pageUsers**](#pageusers) | **POST** /api/users/page | 分页查询用户列表|
+|[**refreshToken**](#refreshtoken) | **POST** /api/auth/refresh | 刷新 Token|
+|[**test**](#test) | **GET** /api/test | 测试接口|
 |[**updateUser**](#updateuser) | **PUT** /api/users | 更新用户信息|
 
 # **batchGetUsers**
@@ -57,6 +59,112 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: application/json
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **changePassword**
+> ResponseVoid changePassword(changePasswordRequest)
+
+修改当前用户密码
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    ChangePasswordRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let changePasswordRequest: ChangePasswordRequest; //
+
+const { status, data } = await apiInstance.changePassword(
+    changePasswordRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **changePasswordRequest** | **ChangePasswordRequest**|  | |
+
+
+### Return type
+
+**ResponseVoid**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **createTestUser**
+> ResponseString createTestUser()
+
+创建测试用户
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let email: string; // (default to undefined)
+let password: string; // (default to undefined)
+
+const { status, data } = await apiInstance.createTestUser(
+    email,
+    password
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **email** | [**string**] |  | defaults to undefined|
+| **password** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**ResponseString**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: */*
 
 
@@ -318,10 +426,10 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **refreshToken**
-> ResponseLoginResponse refreshToken(refreshTokenRequest)
+# **pageUsers**
+> ResponsePageResultUserInfo pageUsers(pageUserQueryRequest)
 
-使用refresh token获取新的access token
+根据分页参数和筛选条件查询用户列表
 
 ### Example
 
@@ -329,16 +437,16 @@ No authorization required
 import {
     DefaultApi,
     Configuration,
-    RefreshTokenRequest
+    PageUserQueryRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let refreshTokenRequest: RefreshTokenRequest; //
+let pageUserQueryRequest: PageUserQueryRequest; //
 
-const { status, data } = await apiInstance.refreshToken(
-    refreshTokenRequest
+const { status, data } = await apiInstance.pageUsers(
+    pageUserQueryRequest
 );
 ```
 
@@ -346,12 +454,12 @@ const { status, data } = await apiInstance.refreshToken(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **refreshTokenRequest** | **RefreshTokenRequest**|  | |
+| **pageUserQueryRequest** | **PageUserQueryRequest**|  | |
 
 
 ### Return type
 
-**ResponseLoginResponse**
+**ResponsePageResultUserInfo**
 
 ### Authorization
 
@@ -370,10 +478,10 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **test**
-> ResponseString test()
+# **refreshToken**
+> ResponseLoginResponse refreshToken()
 
-创建测试用户
+使用 refresh token 获取新的 access token
 
 ### Example
 
@@ -386,26 +494,16 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let email: string; // (default to undefined)
-let password: string; // (default to undefined)
-
-const { status, data } = await apiInstance.test(
-    email,
-    password
-);
+const { status, data } = await apiInstance.refreshToken();
 ```
 
 ### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **email** | [**string**] |  | defaults to undefined|
-| **password** | [**string**] |  | defaults to undefined|
+This endpoint does not have any parameters.
 
 
 ### Return type
 
-**ResponseString**
+**ResponseLoginResponse**
 
 ### Authorization
 
@@ -424,8 +522,8 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **test1**
-> ResponseString test1()
+# **test**
+> ResponseString test()
 
 返回测试字符串
 
@@ -440,7 +538,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-const { status, data } = await apiInstance.test1();
+const { status, data } = await apiInstance.test();
 ```
 
 ### Parameters
