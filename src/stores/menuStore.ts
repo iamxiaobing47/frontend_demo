@@ -29,21 +29,24 @@ export const useMenuStore = defineStore('menu', {
   }),
 
   getters: {
+    // 1. 获取顶级菜单项（无父级ID的菜单）
     getUserMenus: state => {
-      // Return top-level menus (those without a parentId)
       return state.menus.filter(menu => !menu.parentId)
     },
 
+    // 2. 获取所有菜单项
     getAllMenus: state => {
       return state.menus
     },
 
+    // 3. 根据路径查找菜单项
     getMenuByPath: state => {
       return (path: string) => {
         return state.menus.find(menu => menu.path === path)
       }
     },
 
+    // 4. 检查用户是否有路由访问权限
     hasAccessToRoute: state => {
       return (path: string) => {
         return state.menus.some(menu => menu.path === path)
@@ -52,15 +55,18 @@ export const useMenuStore = defineStore('menu', {
   },
 
   actions: {
+    // 5. 设置菜单数据并标记为已初始化
     setMenus(menus: MenuItem[]) {
       this.menus = menus
       this.initialized = true
     },
 
+    // 6. 设置菜单加载状态
     setLoading(loading: boolean) {
       this.loading = loading
     },
 
+    // 7. 清除所有菜单数据和状态
     clearMenus() {
       this.menus = []
       this.businessOwnerId = null
@@ -68,12 +74,12 @@ export const useMenuStore = defineStore('menu', {
       this.initialized = false
     },
 
+    // 8. 从服务获取用户菜单并转换为标准格式
     async fetchUserMenus() {
       this.setLoading(true)
       try {
         const response = await menuService.getUserMenus()
         if (response.success && Array.isArray(response.data)) {
-          // 后端已经构建好了树形结构，直接转换为MenuItem格式
           const convertToMenuItem = (menu: any): MenuItem => {
             return {
               id: menu.pk?.toString() || '',
@@ -94,24 +100,18 @@ export const useMenuStore = defineStore('menu', {
           this.setMenus(rootMenus)
         } else {
           console.error('Failed to fetch user menus:', response.message || 'Unknown error')
-          // Fallback to empty menu array
           this.setMenus([])
         }
       } catch (error) {
         console.error('Error fetching user menus:', error)
-        // Fallback to empty menu array
         this.setMenus([])
-
-        // Optionally show user-friendly error notification
-        // You can integrate with your notification system here
-        console.error('无法加载菜单，请稍后重试') // Log error instead of showing alert
+        console.error('无法加载菜单，请稍后重试')
       } finally {
         this.setLoading(false)
       }
     },
   },
 
-  // 启用持久化
   persist: {
     key: 'menu',
     storage: sessionStorage,

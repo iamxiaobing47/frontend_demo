@@ -2,7 +2,7 @@ import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse 
 import { useAuthStore } from '@/stores/authStore'
 import { resolveMessage } from '@/utils/messageResolver'
 
-// 扩展 Window 接口以支持全局 snackbar 函数
+// 1. 扩展Window接口以支持全局消息提示函数
 declare global {
   interface Window {
     showSnackbar?: (
@@ -26,10 +26,10 @@ const apiClient: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // 确保发送cookie
+  withCredentials: true,
 })
 
-// 标记正在刷新token的promise，避免重复刷新
+// 2. 令牌刷新队列管理，避免重复刷新请求
 let isRefreshing = false
 let failedQueue: Array<{
   resolve: (value?: unknown) => void
@@ -47,11 +47,10 @@ const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue = []
 }
 
-// 解析并显示错误消息
+// 3. 统一错误消息处理和显示
 const showError = (messageCode: string, messageArgs?: string[]) => {
   let message = resolveMessage(messageCode, ...(messageArgs || []))
 
-  // 使用全局 snackbar 函数显示错误消息
   if (window.showSnackbar) {
     window.showSnackbar(message, 'error')
   } else {
@@ -59,6 +58,7 @@ const showError = (messageCode: string, messageArgs?: string[]) => {
   }
 }
 
+// 4. 请求拦截器：添加认证令牌
 apiClient.interceptors.request.use(
   config => {
     const authStore = useAuthStore()
@@ -72,22 +72,19 @@ apiClient.interceptors.request.use(
   }
 )
 
+// 5. 响应拦截器：统一处理API响应和错误
 apiClient.interceptors.response.use(
   (response: AxiosResponse<ApiResponse>) => {
-    // 统一处理 API 响应
     const apiResponse = response.data
 
     if (!apiResponse.success) {
-      // 处理业务逻辑错误
       if (apiResponse.messageCode) {
         showError(apiResponse.messageCode, apiResponse.messageArgs)
       }
 
-      // 拒绝 Promise，让调用方知道请求失败
       return Promise.reject(new Error(apiResponse.messageCode || 'Request failed'))
     }
 
-    // 成功情况，直接返回响应
     return response
   },
   async error => {
@@ -99,7 +96,6 @@ apiClient.interceptors.response.use(
       originalRequest.url !== '/api/auth/login'
     ) {
       if (isRefreshing) {
-        // 如果已经在刷新，将请求加入队列
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject })
         })
@@ -120,12 +116,10 @@ apiClient.interceptors.response.use(
         const newToken = await authStore.refreshToken()
 
         if (newToken && authStore.token) {
-          // 刷新成功，更新原请求的token
           originalRequest.headers.Authorization = `Bearer ${authStore.token}`
           processQueue(null, authStore.token)
           return apiClient(originalRequest)
         } else {
-          // 刷新失败，跳转到登录页
           authStore.logout()
           window.location.href = '/login'
           processQueue(new Error('Token refresh failed'))
@@ -141,9 +135,7 @@ apiClient.interceptors.response.use(
       }
     }
 
-    // 处理网络错误或其他异常
     if (error.response) {
-      // 服务器返回了错误响应（非 401）
       const apiResponse = error.response.data as ApiResponse
       if (apiResponse && apiResponse.messageCode) {
         showError(apiResponse.messageCode, apiResponse.messageArgs)
@@ -154,7 +146,7 @@ apiClient.interceptors.response.use(
   }
 )
 
-// 修改request函数，只返回data部分
+// 6. 封装请求函数，直接返回数据部分
 export const request = async <T = any>(config: AxiosRequestConfig): Promise<T> => {
   const response = await apiClient.request<ApiResponse<T>>(config)
   return response.data.data

@@ -33,21 +33,20 @@
 
     <v-navigation-drawer v-model="appStore.navigation" permanent>
       <v-list density="compact" nav>
-        <!-- Show loading indicator while menus are being fetched -->
+        <!-- 1. 菜单加载中状态 -->
         <v-list-item v-if="menuStore.loading">
           <v-list-item-title>
             <v-progress-linear indeterminate></v-progress-linear>
           </v-list-item-title>
         </v-list-item>
 
-        <!-- Show message if no menus are available -->
+        <!-- 2. 无菜单可用状态 -->
         <v-list-item v-else-if="menuItems.length === 0 && !menuStore.loading">
           <v-list-item-title class="text-grey"> 无可用菜单 </v-list-item-title>
         </v-list-item>
 
-        <!-- Render menu items when not loading and menus are available -->
+        <!-- 3. 渲染菜单项（首页已排除在菜单外） -->
         <template v-else>
-          <!-- Render the menu items (Home page is excluded from menu) -->
           <template v-for="item in menuItems" :key="item.id">
             <v-list-item
               v-if="!item.children || item.children.length === 0"
@@ -96,21 +95,20 @@ const authStore = useAuthStore()
 const menuStore = useMenuStore()
 const router = useRouter()
 
-// 用户信息
+// 1. 用户信息状态
 const userInfo = ref({
   username: '',
   email: '',
 })
 
-// Use dynamic menu from store instead of router-based menu
+// 2. 从store获取动态菜单
 const menuItems = computed(() => {
   return menuStore.getUserMenus
 })
 
-// 获取用户信息
+// 3. 获取当前用户信息
 const fetchUserInfo = async () => {
   try {
-    // 从authStore获取用户信息
     const user = await authStore.fetchCurrentUser()
     userInfo.value = {
       username: user.username || 'Unknown User',
@@ -118,7 +116,6 @@ const fetchUserInfo = async () => {
     }
   } catch (error) {
     console.error('Failed to fetch user info:', error)
-    // 如果获取失败，重置用户信息
     userInfo.value = {
       username: 'Unknown User',
       email: 'No email',
@@ -130,11 +127,13 @@ onMounted(() => {
   fetchUserInfo()
 })
 
+// 4. 处理用户登出
 const handleLogout = async () => {
   await authStore.logout()
   router.push('/login')
 }
 
+// 5. 返回首页
 const goHome = () => {
   appStore.navigation = false
   router.push('/home')

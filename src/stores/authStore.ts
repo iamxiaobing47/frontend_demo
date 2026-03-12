@@ -24,35 +24,19 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    /**
-     * 用户登录方法
-     * @param email 用户邮箱
-     * @param password 用户密码
-     * @throws 如果登录失败，httpClient 拦截器会自动处理错误并抛出异常
-     * @description
-     * - 调用 API 进行登录验证
-     * - 成功后存储访问令牌和用户信息
-     * - 设置用户角色并获取用户特定菜单
-     * - 更新路由配置
-     */
+    // 1. 用户登录：验证凭据并初始化用户会话
     async login(email: string, password: string): Promise<void> {
-      // 使用生成的 API 类，传入自定义的 httpClient
-      // 传入空字符串作为 basePath，让请求使用相对路径（通过 Vite 代理）
       const api = new DefaultApi(undefined, '', apiClient)
       const response = await api.login({
         email,
         password,
       })
 
-      // httpClient 已经处理了错误，这里只处理成功情况
-      // response.data.data 不会是 undefined，因为错误情况已被 httpClient 拦截
       const loginData = response.data.data!
       const accessToken = loginData.accessToken
 
-      // 存储访问令牌
       this.token = accessToken || null
 
-      // 获取完整的用户信息并存储
       const user = loginData.userInfo
       if (user) {
         this.userInfo = {
@@ -63,31 +47,26 @@ export const useAuthStore = defineStore('auth', {
         }
       }
 
-      // 设置用户角色并获取用户特定菜单
       const menuStore = useMenuStore()
-
-      // 获取用户特定菜单
       await menuStore.fetchUserMenus()
     },
 
+    // 2. 用户登出：清除认证状态并重定向到登录页
     async logout(): Promise<void> {
       try {
-        // 使用生成的 API 类，但传入自定义的 httpClient
-        // 传入空字符串作为 basePath，让请求使用相对路径（通过 Vite 代理）
         const api = new DefaultApi(undefined, '', apiClient)
         await api.logout()
       } catch (error) {
         console.error('Logout failed:', error)
       } finally {
-        // 清除store数据（持久化插件会自动清理sessionStorage）
         this.token = null
         this.userInfo = null
       }
     },
 
+    // 3. 刷新访问令牌：处理令牌过期场景
     async refreshToken(): Promise<boolean> {
       if (this.isRefreshing) {
-        // 如果已经在刷新，等待完成
         return new Promise<boolean>(resolve => {
           const checkRefresh = () => {
             if (!this.isRefreshing) {
@@ -102,32 +81,26 @@ export const useAuthStore = defineStore('auth', {
 
       this.isRefreshing = true
       try {
-        // 从cookie中获取refreshToken（浏览器自动处理）
-        // 注意：这里需要从localStorage中获取refreshToken或者从其他方式获取
-        // 因为我们使用的是DefaultApi，需要根据实际API设计来实现
-        // 目前先留空实现，因为可能需要额外的refreshToken信息
         console.warn('Refresh token functionality may need additional implementation')
         this.isRefreshing = false
-        return false // 暂时返回false，因为缺少refreshToken信息
+        return false
       } catch (error) {
         console.error('Refresh token failed:', error)
-        // 如果刷新失败，清除所有认证信息
         this.logout()
         this.isRefreshing = false
         return false
       }
     },
 
+    // 4. 检查并刷新令牌：验证当前令牌有效性
     async checkAndRefreshToken(): Promise<boolean> {
       if (!this.token) {
         return false
       }
-
-      // 这里可以添加JWT过期检查逻辑
-      // 简单起见，我们直接尝试刷新或保持当前状态
       return true
     },
 
+    // 5. 获取当前用户信息：从store返回已缓存的用户数据
     async fetchCurrentUser(): Promise<UserInfo> {
       if (this.userInfo) {
         return this.userInfo
@@ -137,7 +110,6 @@ export const useAuthStore = defineStore('auth', {
     },
   },
 
-  // 启用持久化
   persist: {
     key: 'auth',
     storage: sessionStorage,

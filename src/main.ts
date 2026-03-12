@@ -16,14 +16,13 @@ app.use(pinia)
 app.use(router)
 app.use(vuetify)
 
-// Initialize auth and menu stores after app is ready
+// 1. 挂载应用实例
 app.mount('#app')
 
-// Check if user is already logged in (has token in localStorage)
+// 2. 检查用户是否已登录并重新获取菜单
 const authStore = useAuthStore()
 const menuStore = useMenuStore()
 
 if (authStore.isAuthenticated) {
-  // Re-fetch user menus on app initialization
   menuStore.fetchUserMenus()
 }

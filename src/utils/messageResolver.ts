@@ -1,39 +1,28 @@
-import { messageTexts } from './messageTexts';
+import { messageTexts } from './messageTexts'
 
-/**
- * Resolves a message code to its formatted message text.
- * @param messageCode the message code
- * @param args the arguments to format into the message
- * @returns the formatted message text, or the message code if not found
- */
+// 1. 根据消息代码和参数解析格式化消息文本
 export function resolveMessage(messageCode: string, ...args: any[]): string {
-  const messageText = messageTexts[messageCode];
+  const messageText = messageTexts[messageCode]
   if (messageText === undefined) {
-    return messageCode; // Return code as fallback
+    return messageCode
   }
-  
+
   if (args.length === 0) {
-    return messageText;
+    return messageText
   }
-  
-  // Format the message with arguments (simple replacement for {0}, {1}, etc.)
+
   try {
-    let result = messageText;
+    let result = messageText
     for (let i = 0; i < args.length; i++) {
-      result = result.replace(new RegExp(`\\{${i}\\}`, 'g'), String(args[i] ?? ''));
+      result = result.replace(new RegExp(`\\{${i}\\}`, 'g'), String(args[i] ?? ''))
     }
-    return result;
+    return result
   } catch (e) {
-    // If formatting fails, return the raw message text
-    return messageText;
+    return messageText
   }
 }
 
-/**
- * Resolves a message code to its message text without formatting.
- * @param messageCode the message code
- * @returns the message text, or the message code if not found
- */
+// 2. 解析消息代码对应的原始消息文本（不进行参数格式化）
 export function resolveMessageRaw(messageCode: string): string {
-  return messageTexts[messageCode] ?? messageCode;
+  return messageTexts[messageCode] ?? messageCode
 }

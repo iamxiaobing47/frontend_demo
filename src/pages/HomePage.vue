@@ -30,11 +30,7 @@ onMounted(() => {
   appStore.setBreadcrumbs([])
 })
 
-/**
- * 处理测试API按钮点击事件
- * - 调用 homeStore.fetchTest 获取测试数据
- * - 使用 nextTick 确保DOM更新
- */
+// 1. 处理测试API按钮点击事件，获取并显示测试数据
 const handleFetchTest = async () => {
   await homeStore.fetchTest()
   await nextTick()

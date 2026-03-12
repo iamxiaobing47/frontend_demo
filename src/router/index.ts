@@ -2,10 +2,10 @@ import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 
-// Eager load all pages
+// 1. 预加载所有页面组件
 const modules = import.meta.glob('@/pages/**/*.vue', { eager: true })
 
-// Define static routes that don't depend on user permissions
+// 2. 定义静态路由（不依赖用户权限）
 const staticRoutes: RouteRecordRaw[] = [
   {
     path: '/login',
@@ -15,7 +15,7 @@ const staticRoutes: RouteRecordRaw[] = [
   },
 ]
 
-// Main layout route with dynamic children
+// 3. 定义主布局路由及其动态子路由
 const mainLayoutRoute: RouteRecordRaw & { children: RouteRecordRaw[] } = {
   path: '/',
   component: () => import('@/layouts/MainLayout.vue'),
@@ -23,16 +23,15 @@ const mainLayoutRoute: RouteRecordRaw & { children: RouteRecordRaw[] } = {
   meta: { requiresAuth: true },
 }
 
-// Combined routes
+// 4. 合并所有路由
 const routes: RouteRecordRaw[] = [...staticRoutes, mainLayoutRoute]
 
-// Predefine all page routes - menu only controls navigation display, not route existence
+// 5. 动态添加所有页面路由（菜单仅控制导航显示，不影响路由存在性）
 const pagesDir = modules as Record<string, any>
 
-// Add all available page routes
 for (const path in pagesDir) {
   const fileName = path.split('/').pop()?.replace('.vue', '') || ''
-  if (fileName === 'LoginPage') continue // Skip login page (already defined)
+  if (fileName === 'LoginPage') continue
 
   const route: RouteRecordRaw = {
     path: '/' + fileName.replace(/Page$/, '').toLowerCase(),
@@ -48,6 +47,7 @@ const router = createRouter({
   routes,
 })
 
+// 6. 路由守卫：处理认证和重定向逻辑
 router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore()
   const isAuthenticated = authStore.isAuthenticated

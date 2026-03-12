@@ -22,7 +22,7 @@ const snackbar = ref({
   timeout: 3000,
 })
 
-// 设置全局 snackbar 函数
+// 1. 设置全局消息提示函数，用于显示API错误和其他通知
 window.showSnackbar = (
   message: string,
   color: 'success' | 'error' | 'info' | 'warning' = 'error',
