@@ -343,9 +343,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        refreshToken: async (refreshTokenRequest: RefreshTokenRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'refreshTokenRequest' is not null or undefined
-            assertParamExists('refreshToken', 'refreshTokenRequest', refreshTokenRequest)
+        refreshToken: async (refreshTokenRequest: RefreshTokenRequest = {} as RefreshTokenRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/auth/refresh`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -573,7 +571,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async refreshToken(refreshTokenRequest: RefreshTokenRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseLoginResponse>> {
+        async refreshToken(refreshTokenRequest: RefreshTokenRequest = {} as RefreshTokenRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseLoginResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.refreshToken(refreshTokenRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.refreshToken']?.[localVarOperationServerIndex]?.url;
@@ -693,7 +691,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        refreshToken(refreshTokenRequest: RefreshTokenRequest, options?: RawAxiosRequestConfig): AxiosPromise<ResponseLoginResponse> {
+        refreshToken(refreshTokenRequest: RefreshTokenRequest = {} as RefreshTokenRequest, options?: RawAxiosRequestConfig): AxiosPromise<ResponseLoginResponse> {
             return localVarFp.refreshToken(refreshTokenRequest, options).then((request) => request(axios, basePath));
         },
         /**
@@ -805,7 +803,7 @@ export class DefaultApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public refreshToken(refreshTokenRequest: RefreshTokenRequest, options?: RawAxiosRequestConfig) {
+    public refreshToken(refreshTokenRequest: RefreshTokenRequest = {} as RefreshTokenRequest, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).refreshToken(refreshTokenRequest, options).then((request) => request(this.axios, this.basePath));
     }
 

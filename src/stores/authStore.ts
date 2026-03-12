@@ -81,12 +81,22 @@ export const useAuthStore = defineStore('auth', {
 
       this.isRefreshing = true
       try {
-        console.warn('Refresh token functionality may need additional implementation')
+        const api = new DefaultApi(undefined, '', apiClient)
+        const response = await api.refreshToken({})
+
+        const loginData = response.data.data!
+        const newAccessToken = loginData.accessToken
+
+        if (newAccessToken) {
+          this.token = newAccessToken
+          this.isRefreshing = false
+          return true
+        }
+
         this.isRefreshing = false
         return false
       } catch (error) {
         console.error('Refresh token failed:', error)
-        this.logout()
         this.isRefreshing = false
         return false
       }
