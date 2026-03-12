@@ -126,6 +126,29 @@ export interface UserInfoEntity {
     'orgName'?: string;
     'orgType'?: string;
 }
+export interface PageUserQueryRequest {
+    'pageNum': number;
+    'pageSize': number;
+    'userType'?: string;
+    'email'?: string;
+    'userName'?: string;
+}
+export interface PageResultUserInfo {
+    'records'?: Array<UserInfo>;
+    'total'?: number;
+    'pageNum'?: number;
+    'pageSize'?: number;
+    'pages'?: number;
+    'hasPrevious'?: boolean;
+    'hasNext'?: boolean;
+}
+export interface ResponsePageResultUserInfo {
+    'success'?: boolean;
+    'data'?: PageResultUserInfo;
+    'messageCode'?: string;
+    'messageArgs'?: Array<string>;
+    'message'?: string;
+}
 
 /**
  * DefaultApi - axios parameter creator
@@ -231,6 +254,38 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(deleteUserRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 分页查询用户列表
+         * @summary 分页查询用户列表
+         * @param {PageUserQueryRequest} pageUserQueryRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        pageUsers: async (pageUserQueryRequest: PageUserQueryRequest = {} as PageUserQueryRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/users/page`;
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(pageUserQueryRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -533,6 +588,19 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        /**
+         * 分页查询用户列表
+         * @summary 分页查询用户列表
+         * @param {PageUserQueryRequest} pageUserQueryRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async pageUsers(pageUserQueryRequest: PageUserQueryRequest = {} as PageUserQueryRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponsePageResultUserInfo>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.pageUsers(pageUserQueryRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.pageUsers']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
         async getUser(userId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseUserInfoEntity>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getUser(userId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
@@ -771,6 +839,17 @@ export class DefaultApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
+    /**
+     * 分页查询用户列表
+     * @summary 分页查询用户列表
+     * @param {PageUserQueryRequest} pageUserQueryRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public pageUsers(pageUserQueryRequest: PageUserQueryRequest = {} as PageUserQueryRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).pageUsers(pageUserQueryRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
     public getUser(userId: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).getUser(userId, options).then((request) => request(this.axios, this.basePath));
     }

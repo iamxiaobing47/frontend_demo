@@ -8,6 +8,8 @@ import type {
   DeleteUserRequest,
   UserInfo,
   BatchUserQueryRequest,
+  PageUserQueryRequest,
+  PageResultUserInfo,
 } from '@/services/generated/api'
 
 // 使用自定义的 httpClient 创建 API 实例
@@ -16,6 +18,16 @@ const api = new DefaultApi(undefined, '', apiClient)
 export const useUserStore = defineStore('user', () => {
   // 用户列表
   const users = ref<UserInfo[]>([]) as Ref<UserInfo[]>
+
+  // 分页数据
+  const pagination = ref({
+    pageNum: 1,
+    pageSize: 10,
+    total: 0,
+    pages: 0,
+    hasPrevious: false,
+    hasNext: false,
+  })
 
   // 当前选中的用户（用于编辑）
   const currentUser = ref<UserInfo | null>(null) as Ref<UserInfo | null>
@@ -26,15 +38,40 @@ export const useUserStore = defineStore('user', () => {
   // 错误信息
   const error = ref('')
 
-  // 获取所有用户列表
-  const fetchUsers = async () => {
+  // 搜索条件
+  const searchCriteria = ref({
+    userType: '',
+    email: '',
+    userName: '',
+  })
+
+  // 分页查询用户列表
+  const fetchUsers = async (pageNum: number = 1, pageSize: number = 10) => {
     try {
       loading.value = true
       error.value = ''
 
-      // 由于API中没有直接获取所有用户的接口，我们暂时返回空数组
-      // 在实际应用中，后端应该提供获取用户列表的API
-      users.value = []
+      const request: PageUserQueryRequest = {
+        pageNum,
+        pageSize,
+        userType: searchCriteria.value.userType || undefined,
+        email: searchCriteria.value.email || undefined,
+        userName: searchCriteria.value.userName || undefined,
+      }
+
+      const response = await api.pageUsers(request)
+      const pageResult = response.data.data as PageResultUserInfo
+
+      users.value = pageResult.records || []
+      pagination.value = {
+        pageNum: pageResult.pageNum || 1,
+        pageSize: pageResult.pageSize || 10,
+        total: pageResult.total || 0,
+        pages: pageResult.pages || 0,
+        hasPrevious: pageResult.hasPrevious || false,
+        hasNext: pageResult.hasNext || false,
+      }
+
       loading.value = false
     } catch (err: any) {
       error.value = err.message || '获取用户列表失败'
@@ -42,7 +79,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  // 根据用户ID获取单个用户
+  // 根据用户 ID 获取单个用户
   const fetchUserById = async (userId: string) => {
     const response = await api.getUser(userId)
     return response.data.data
@@ -74,6 +111,24 @@ export const useUserStore = defineStore('user', () => {
     return response.data.data
   }
 
+  // 设置搜索条件
+  const setSearchCriteria = (criteria: { userType?: string; email?: string; userName?: string }) => {
+    searchCriteria.value = {
+      userType: criteria.userType || '',
+      email: criteria.email || '',
+      userName: criteria.userName || '',
+    }
+  }
+
+  // 重置搜索条件
+  const resetSearchCriteria = () => {
+    searchCriteria.value = {
+      userType: '',
+      email: '',
+      userName: '',
+    }
+  }
+
   // 重置当前用户
   const resetCurrentUser = () => {
     currentUser.value = null
@@ -86,15 +141,19 @@ export const useUserStore = defineStore('user', () => {
 
   return {
     users,
+    pagination,
     currentUser,
     loading,
     error,
+    searchCriteria,
     fetchUsers,
     fetchUserById,
     batchGetUsers,
     createUser,
     updateUser,
     deleteUser,
+    setSearchCriteria,
+    resetSearchCriteria,
     resetCurrentUser,
     setCurrentUser,
   }

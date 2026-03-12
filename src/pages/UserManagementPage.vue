@@ -1,6 +1,14 @@
 <template>
   <v-sheet border rounded>
-    <v-data-table :headers="headers" :hide-default-footer="users.length < 11" :items="users">
+    <v-data-table
+      :headers="headers"
+      :items="userStore.users"
+      :loading="userStore.loading"
+      :items-per-page="userStore.pagination.pageSize"
+      :page="userStore.pagination.pageNum"
+      :items-length="userStore.pagination.total"
+      @update:options="loadUsers"
+    >
       <template v-slot:top>
         <v-toolbar flat>
           <v-toolbar-title>
@@ -14,8 +22,30 @@
             用户管理
           </v-toolbar-title>
 
+          <v-spacer></v-spacer>
+
+          <!-- 搜索框 -->
+          <v-text-field
+            v-model="searchEmail"
+            label="搜索邮箱"
+            class="me-2"
+            style="max-width: 200px"
+            density="compact"
+            hide-details
+            clearable
+            @keyup.enter="handleSearch"
+          ></v-text-field>
+
           <v-btn
             class="me-2"
+            prepend-icon="mdi-magnify"
+            rounded="lg"
+            text="搜索"
+            border
+            @click="handleSearch"
+          ></v-btn>
+
+          <v-btn
             prepend-icon="mdi-plus"
             rounded="lg"
             text="添加用户"
@@ -33,37 +63,46 @@
         </v-chip>
       </template>
 
+      <template v-slot:item.userType="{ value }">
+        <v-chip
+          :text="value === 'BUSINESS_USER' ? '商户用户' : value === 'STAFF_USER' ? '员工用户' : value"
+          :color="value === 'BUSINESS_USER' ? 'primary' : value === 'STAFF_USER' ? 'success' : 'default'"
+          size="small"
+        ></v-chip>
+      </template>
+
       <template v-slot:item.actions="{ item }">
         <div class="d-flex ga-2 justify-end">
           <v-icon
             color="medium-emphasis"
             icon="mdi-pencil"
             size="small"
-            @click="edit(item.id)"
+            @click="edit(item)"
           ></v-icon>
 
           <v-icon
             color="medium-emphasis"
             icon="mdi-delete"
             size="small"
-            @click="remove(item.id)"
+            @click="confirmDelete(item)"
           ></v-icon>
         </div>
       </template>
 
       <template v-slot:no-data>
         <v-btn
-          prepend-icon="mdi-backup-restore"
+          prepend-icon="mdi-refresh"
           rounded="lg"
-          text="重置数据"
+          text="刷新数据"
           variant="text"
           border
-          @click="reset"
+          @click="loadUsers"
         ></v-btn>
       </template>
     </v-data-table>
   </v-sheet>
 
+  <!-- 添加/编辑用户对话框 -->
   <v-dialog v-model="dialog" max-width="600">
     <v-card
       :subtitle="`${isEditing ? '更新' : '创建'}用户信息`"
@@ -91,7 +130,7 @@
           <v-col cols="12" md="6">
             <v-text-field
               v-model="formModel.userId"
-              label="用户ID"
+              label="用户 ID"
               :disabled="isEditing"
             ></v-text-field>
           </v-col>
@@ -101,11 +140,19 @@
           </v-col>
 
           <v-col cols="12" md="6">
-            <v-text-field v-model="formModel.userType" label="用户类型"></v-text-field>
+            <v-select
+              v-model="formModel.userType"
+              label="用户类型 *"
+              :items="[
+                { title: '商户用户', value: 'BUSINESS_USER' },
+                { title: '员工用户', value: 'STAFF_USER' },
+              ]"
+              :rules="[rules.required]"
+            ></v-select>
           </v-col>
 
           <v-col cols="12" md="6">
-            <v-text-field v-model="formModel.orgId" label="组织ID"></v-text-field>
+            <v-text-field v-model="formModel.orgId" label="组织 ID"></v-text-field>
           </v-col>
         </v-row>
       </template>
@@ -117,28 +164,39 @@
 
         <v-spacer></v-spacer>
 
-        <v-btn text="保存" @click="save"></v-btn>
+        <v-btn text="保存" :loading="saving" @click="save"></v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+  <!-- 删除确认对话框 -->
+  <v-dialog v-model="deleteDialog" max-width="400">
+    <v-card title="确认删除">
+      <template v-slot:text>
+        确定要删除用户 <span class="font-weight-bold">{{ deleteUserEmail }}</span> 吗？此操作不可恢复。
+      </template>
+
+      <v-divider></v-divider>
+
+      <v-card-actions class="bg-surface-light">
+        <v-btn text="取消" variant="plain" @click="deleteDialog = false"></v-btn>
+
+        <v-spacer></v-spacer>
+
+        <v-btn text="删除" color="error" :loading="deleting" @click="doDelete"></v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, shallowRef, toRef, onMounted } from 'vue'
+import { ref, shallowRef, toRef, onMounted, computed } from 'vue'
 import { useAppStore } from '@/stores/appStore'
-import type { UserInfoEntity } from '@/services/generated/api'
-
-// 扩展用户类型，添加 id 属性用于表格操作
-interface UserWithId extends UserInfoEntity {
-  id: number
-}
-
-// 表单模型类型，包含密码字段（仅用于表单）
-interface FormModel extends UserWithId {
-  password: string
-}
+import { useUserStore } from '@/stores/userStore'
+import type { UserInfo, CreateUserRequest, UpdateUserRequest } from '@/services/generated/api'
 
 const appStore = useAppStore()
+const userStore = useUserStore()
 
 // 验证规则
 const rules = {
@@ -147,7 +205,17 @@ const rules = {
     const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     return pattern.test(value) || '请输入有效的邮箱地址'
   },
-  password: (value: string) => value.length >= 6 || '密码至少需要6个字符',
+  password: (value: string) => value.length >= 6 || '密码至少需要 6 个字符',
+}
+
+interface FormModel {
+  id: number
+  userId: string
+  email: string
+  password: string
+  userName: string
+  userType: string
+  orgId: string
 }
 
 function createNewRecord(): FormModel {
@@ -159,142 +227,124 @@ function createNewRecord(): FormModel {
     userName: '',
     userType: '',
     orgId: '',
-    orgName: '',
-    orgType: '',
   }
 }
 
-const users = ref<UserWithId[]>([])
 const formModel = ref<FormModel>(createNewRecord())
 const dialog = shallowRef(false)
+const deleteDialog = shallowRef(false)
 const isEditing = toRef(() => !!formModel.value.id)
+const saving = ref(false)
+const deleting = ref(false)
+const deleteUserEmail = ref('')
+const deleteUserItem = ref<UserInfo | null>(null)
+const searchEmail = ref('')
 
+// 分页表头
 const headers = [
-  { title: '用户ID', key: 'userId', align: 'start' as const },
+  { title: '用户 ID', key: 'userId', align: 'start' as const },
   { title: '邮箱', key: 'email' },
   { title: '用户名', key: 'userName' },
   { title: '用户类型', key: 'userType' },
-  { title: '组织ID', key: 'orgId' },
+  { title: '组织 ID', key: 'orgId' },
   { title: '操作', key: 'actions', align: 'end' as const, sortable: false },
 ]
 
+// 加载用户数据（分页）
+const loadUsers = async (options: { page?: number; itemsPerPage?: number }) => {
+  const page = options.page || 1
+  const pageSize = options.itemsPerPage || 10
+  await userStore.fetchUsers(page, pageSize)
+}
+
+// 搜索
+const handleSearch = async () => {
+  userStore.setSearchCriteria({
+    email: searchEmail.value || undefined,
+  })
+  await userStore.fetchUsers(1, userStore.pagination.pageSize)
+}
+
+// 添加用户
+const add = () => {
+  formModel.value = createNewRecord()
+  dialog.value = true
+}
+
+// 编辑用户
+const edit = (item: UserInfo) => {
+  formModel.value = {
+    id: 1, // 标记为编辑模式
+    userId: item.userId || '',
+    email: item.email || '',
+    password: '',
+    userName: item.userName || '',
+    userType: item.userType || '',
+    orgId: item.orgId || '',
+  }
+  dialog.value = true
+}
+
+// 确认删除
+const confirmDelete = (item: UserInfo) => {
+  deleteUserItem.value = item
+  deleteUserEmail.value = item.email || ''
+  deleteDialog.value = true
+}
+
+// 执行删除
+const doDelete = async () => {
+  if (!deleteUserItem.value) return
+
+  deleting.value = true
+  try {
+    await userStore.deleteUser(deleteUserItem.value.userId || '', deleteUserItem.value.userType || '')
+    await loadUsers({ page: userStore.pagination.pageNum, itemsPerPage: userStore.pagination.pageSize })
+    deleteDialog.value = false
+  } catch (error: any) {
+    console.error('删除失败:', error)
+  } finally {
+    deleting.value = false
+  }
+}
+
+// 保存（创建或更新）
+const save = async () => {
+  saving.value = true
+  try {
+    if (isEditing.value) {
+      // 更新用户
+      const updateData: UpdateUserRequest = {
+        userId: formModel.value.userId,
+        userType: formModel.value.userType,
+        name: formModel.value.userName,
+        orgId: formModel.value.orgId,
+      }
+      await userStore.updateUser(updateData)
+    } else {
+      // 创建用户
+      const createData: CreateUserRequest = {
+        email: formModel.value.email,
+        password: formModel.value.password,
+        userId: formModel.value.userId,
+        userType: formModel.value.userType,
+        userName: formModel.value.userName,
+        orgId: formModel.value.orgId,
+      }
+      await userStore.createUser(createData)
+    }
+
+    dialog.value = false
+    await loadUsers({ page: userStore.pagination.pageNum, itemsPerPage: userStore.pagination.pageSize })
+  } catch (error: any) {
+    console.error('保存失败:', error)
+  } finally {
+    saving.value = false
+  }
+}
+
 onMounted(() => {
   appStore.setBreadcrumbs([{ title: '用户管理' }])
-  reset()
+  loadUsers({ page: 1, itemsPerPage: 10 })
 })
-
-function add() {
-  formModel.value = createNewRecord()
-  dialog.value = true
-}
-
-function edit(id: number) {
-  const found = users.value.find(user => user.id === id)
-
-  if (found) {
-    formModel.value = {
-      id: found.id,
-      userId: found.userId || '',
-      email: found.email || '',
-      password: '',
-      userName: found.userName || '',
-      userType: found.userType || '',
-      orgId: found.orgId || '',
-      orgName: found.orgName || '',
-      orgType: found.orgType || '',
-    }
-  }
-
-  dialog.value = true
-}
-
-function remove(id: number) {
-  const index = users.value.findIndex(user => user.id === id)
-  users.value.splice(index, 1)
-}
-
-function save() {
-  // 从表单模型中移除 password 字段，创建用户对象
-  const { password, ...userWithoutPassword } = formModel.value
-
-  if (isEditing.value) {
-    const index = users.value.findIndex(user => user.id === formModel.value.id)
-    users.value[index] = {
-      ...userWithoutPassword,
-      // 保持原始的只读字段
-      orgName: users.value[index].orgName,
-      orgType: users.value[index].orgType,
-    }
-  } else {
-    // 为新用户分配ID
-    const newId = users.value.length > 0 ? Math.max(...users.value.map(u => u.id || 0)) + 1 : 1
-    const newUser: UserWithId = {
-      ...userWithoutPassword,
-      id: newId,
-      // 设置默认的只读字段
-      orgName: userWithoutPassword.orgName || '默认组织',
-      orgType: userWithoutPassword.orgType || '默认类型',
-    }
-    users.value.push(newUser)
-  }
-
-  dialog.value = false
-}
-
-function reset() {
-  dialog.value = false
-  formModel.value = createNewRecord()
-  users.value = [
-    {
-      id: 1,
-      userId: 'user001',
-      email: 'zhangsan@example.com',
-      userName: '张三',
-      userType: '管理员',
-      orgId: 'org001',
-      orgName: '技术部',
-      orgType: '部门',
-    },
-    {
-      id: 2,
-      userId: 'user002',
-      email: 'lisi@example.com',
-      userName: '李四',
-      userType: '普通用户',
-      orgId: 'org002',
-      orgName: '市场部',
-      orgType: '部门',
-    },
-    {
-      id: 3,
-      userId: 'user003',
-      email: 'wangwu@example.com',
-      userName: '王五',
-      userType: '审核员',
-      orgId: 'org003',
-      orgName: '财务部',
-      orgType: '部门',
-    },
-    {
-      id: 4,
-      userId: 'user004',
-      email: 'zhaoliu@example.com',
-      userName: '赵六',
-      userType: '普通用户',
-      orgId: 'org001',
-      orgName: '技术部',
-      orgType: '部门',
-    },
-    {
-      id: 5,
-      userId: 'user005',
-      email: 'sunqi@example.com',
-      userName: '孙七',
-      userType: '管理员',
-      orgId: 'org004',
-      orgName: '人事部',
-      orgType: '部门',
-    },
-  ]
-}
 </script>
