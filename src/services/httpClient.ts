@@ -58,6 +58,17 @@ const showError = (messageCode: string, messageArgs?: string[]) => {
   }
 }
 
+// 4. 统一成功消息处理和显示
+const showSuccess = (messageCode: string, messageArgs?: string[]) => {
+  if (!messageCode) return
+
+  let message = resolveMessage(messageCode, ...(messageArgs || []))
+
+  if (window.showSnackbar) {
+    window.showSnackbar(message, 'success', 3000)
+  }
+}
+
 // 4. 请求拦截器：添加认证令牌
 apiClient.interceptors.request.use(
   config => {
@@ -83,6 +94,11 @@ apiClient.interceptors.response.use(
       }
 
       return Promise.reject(new Error(apiResponse.messageCode || 'Request failed'))
+    }
+
+    // 显示成功消息（如果有 messageCode）
+    if (apiResponse.messageCode) {
+      showSuccess(apiResponse.messageCode, apiResponse.messageArgs)
     }
 
     return response
