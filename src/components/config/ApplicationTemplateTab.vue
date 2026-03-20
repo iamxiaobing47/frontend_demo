@@ -188,7 +188,14 @@ const openDialog = (item?: ApplicationTemplate) => {
 }
 
 const save = async () => {
-  if (!form.value.templateNm || !form.value.filePath || !form.value.regionCd || !form.value.countryCd || !form.value.productCd) return
+  if (!form.value.templateNm || !form.value.filePath) {
+    console.error('テンプレート名とファイルパスは必須です')
+    return
+  }
+  if (!form.value.regionCd || !form.value.countryCd || !form.value.productCd) {
+    console.error('地域、国、品目を選択してください')
+    return
+  }
 
   saving.value = true
   try {
@@ -198,8 +205,10 @@ const save = async () => {
       await configStore.createTemplate(form.value)
     }
     dialog.value = false
-  } catch (error) {
+  } catch (error: any) {
     console.error('保存エラー:', error)
+    console.error('エラー詳細:', error.response?.data)
+    alert('保存に失敗しました：' + (error.response?.data?.message || error.message))
   } finally {
     saving.value = false
   }
