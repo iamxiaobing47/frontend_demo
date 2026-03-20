@@ -60,7 +60,7 @@
       <template v-slot:item.userType="{ value }">
         <v-chip
           :text="
-            value === 'BUSINESS_USER' ? '商户用户' : value === 'STAFF_USER' ? '员工用户' : value
+            value === 'BUSINESS_USER' ? '企业用户' : value === 'STAFF_USER' ? '政府职员' : value
           "
           :color="
             value === 'BUSINESS_USER' ? 'primary' : value === 'STAFF_USER' ? 'success' : 'default'
@@ -142,8 +142,8 @@
               v-model="formModel.userType"
               label="用户类型 *"
               :items="[
-                { title: '商户用户', value: 'BUSINESS_USER' },
-                { title: '员工用户', value: 'STAFF_USER' },
+                { title: '企业用户', value: 'BUSINESS_USER' },
+                { title: '政府职员', value: 'STAFF_USER' },
               ]"
               :rules="[rules.required]"
             ></v-select>
