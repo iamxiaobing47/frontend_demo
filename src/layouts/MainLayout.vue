@@ -7,9 +7,7 @@
       <v-btn icon @click="goHome">
         <v-icon>mdi-home</v-icon>
       </v-btn>
-      <v-btn icon>
-        <v-icon>mdi-bell</v-icon>
-      </v-btn>
+
       <v-menu>
         <template #activator="{ props }">
           <v-btn icon v-bind="props">
