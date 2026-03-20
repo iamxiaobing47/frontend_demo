@@ -90,13 +90,6 @@ export const useUserStore = defineStore('user', () => {
     return response.data.data
   }
 
-  // 批量获取用户
-  const batchGetUsers = async (userIds: string[]) => {
-    const request: BatchUserQueryRequest = { userIds }
-    const response = await api.batchGetUsers(request)
-    return response.data.data
-  }
-
   // 创建用户
   const createUser = async (userData: CreateUserRequest) => {
     const response = await api.createUser(userData)
@@ -117,7 +110,11 @@ export const useUserStore = defineStore('user', () => {
   }
 
   // 设置搜索条件
-  const setSearchCriteria = (criteria: { userType?: string; email?: string; userName?: string }) => {
+  const setSearchCriteria = (criteria: {
+    userType?: string
+    email?: string
+    userName?: string
+  }) => {
     searchCriteria.value = {
       userType: criteria.userType || '',
       email: criteria.email || '',
@@ -153,7 +150,6 @@ export const useUserStore = defineStore('user', () => {
     searchCriteria,
     fetchUsers,
     fetchUserById,
-    batchGetUsers,
     createUser,
     updateUser,
     deleteUser,
