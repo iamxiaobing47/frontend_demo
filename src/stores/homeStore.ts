@@ -33,7 +33,7 @@ export const useHomeStore = defineStore('home', {
       this.error = ''
       try {
         const api = new DefaultApi(undefined, '', apiClient)
-        const response = await api.test1()
+        const response = await api.test()
         this.data = response.data.data || ''
       } catch (e: any) {
         this.error = e.message || '请求失败'

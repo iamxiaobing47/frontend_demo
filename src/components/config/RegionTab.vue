@@ -2,7 +2,7 @@
   <div>
     <!-- 工具栏 -->
     <v-toolbar flat>
-      <v-toolbar-title>国家一覧</v-toolbar-title>
+      <v-toolbar-title>地域一覧</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn color="primary" prepend-icon="mdi-plus" @click="openDialog()">
         追加
@@ -12,18 +12,12 @@
     <!-- 数据表格 -->
     <v-data-table
       :headers="headers"
-      :items="configStore.kuniList"
-      :loading="configStore.kuniLoading"
+      :items="configStore.regionList"
+      :loading="configStore.regionLoading"
       hover
     >
-      <template v-slot:item.kuniCd="{ item }">
-        <v-chip color="primary" size="small">{{ item.kuniCd }}</v-chip>
-      </template>
-
-      <template v-slot:item.chiikiCd="{ item }">
-        <v-chip color="secondary" size="small">
-          {{ getChiikiName(item.chiikiCd) }}
-        </v-chip>
+      <template v-slot:item.regionCd="{ item }">
+        <v-chip color="primary" size="small">{{ item.regionCd }}</v-chip>
       </template>
 
       <template v-slot:item.actions="{ item }">
@@ -34,22 +28,13 @@
 
     <!-- 编辑对话框 -->
     <v-dialog v-model="dialog" max-width="500">
-      <v-card :title="isEditing ? '国家編集' : '国家追加'">
+      <v-card :title="isEditing ? '地域編集' : '地域追加'">
         <v-card-text>
-          <v-select
-            v-model="form.chiikiCd"
-            :items="chiikiOptions"
-            item-title="chiikiNm"
-            item-value="chiikiCd"
-            label="所属地域"
-            required
-            :rules="[v => !!v || '所属地域は必須です']"
-          />
           <v-text-field
-            v-model="form.kuniNm"
-            label="国名"
+            v-model="form.regionNm"
+            label="地域名"
             required
-            :rules="[v => !!v || '国名は必須です']"
+            :rules="[v => !!v || '地域名は必須です']"
           />
         </v-card-text>
         <v-card-actions>
@@ -64,7 +49,7 @@
     <v-dialog v-model="deleteDialog" max-width="400">
       <v-card title="削除確認">
         <v-card-text>
-          国「<span class="font-weight-bold">{{ deleteItem?.kuniNm }}</span>」を削除してもよろしいですか？
+          地域「<span class="font-weight-bold">{{ deleteItem?.regionNm }}</span>」を削除してもよろしいですか？
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -78,39 +63,30 @@
 
 <script setup lang="ts">
 import { ref, shallowRef, computed, onMounted } from 'vue'
-import { useConfigStore, type Kuni } from '@/stores/configStore'
+import { useConfigStore, type Region } from '@/stores/configStore'
 
 const configStore = useConfigStore()
 
 const headers = [
-  { title: '国コード', key: 'kuniCd', align: 'center' },
-  { title: '所属地域', key: 'chiikiCd' },
-  { title: '国名', key: 'kuniNm' },
-  { title: '操作', key: 'actions', align: 'end', sortable: false },
+  { title: '地域コード', key: 'regionCd', align: 'center' as const },
+  { title: '地域名', key: 'regionNm' },
+  { title: '操作', key: 'actions', align: 'end' as const, sortable: false },
 ]
 
 const dialog = shallowRef(false)
 const deleteDialog = shallowRef(false)
 const saving = ref(false)
 const deleting = ref(false)
-const isEditing = computed(() => !!form.value.kuniCd)
+const isEditing = computed(() => !!form.value.regionCd)
 
-const defaultForm = (): Kuni => ({
-  chiikiCd: 0,
-  kuniNm: '',
+const defaultForm = (): Region => ({
+  regionNm: '',
 })
 
-const form = ref<Kuni>(defaultForm())
-const deleteItem = ref<Kuni | null>(null)
+const form = ref<Region>(defaultForm())
+const deleteItem = ref<Region | null>(null)
 
-const chiikiOptions = computed(() => configStore.chiikiList)
-
-const getChiikiName = (chiikiCd: number) => {
-  const chiiki = configStore.chiikiList.find(c => c.chiikiCd === chiikiCd)
-  return chiiki?.chiikiNm || String(chiikiCd)
-}
-
-const openDialog = (item?: Kuni) => {
+const openDialog = (item?: Region) => {
   if (item) {
     form.value = { ...item }
   } else {
@@ -120,14 +96,14 @@ const openDialog = (item?: Kuni) => {
 }
 
 const save = async () => {
-  if (!form.value.kuniNm || !form.value.chiikiCd) return
+  if (!form.value.regionNm) return
 
   saving.value = true
   try {
     if (isEditing.value) {
-      await configStore.updateKuni(form.value.kuniCd!, form.value)
+      await configStore.updateRegion(form.value.regionCd!, form.value)
     } else {
-      await configStore.createKuni(form.value)
+      await configStore.createRegion(form.value)
     }
     dialog.value = false
   } catch (error) {
@@ -137,17 +113,17 @@ const save = async () => {
   }
 }
 
-const confirmDelete = (item: Kuni) => {
+const confirmDelete = (item: Region) => {
   deleteItem.value = item
   deleteDialog.value = true
 }
 
 const doDelete = async () => {
-  if (!deleteItem.value?.kuniCd) return
+  if (!deleteItem.value?.regionCd) return
 
   deleting.value = true
   try {
-    await configStore.deleteKuni(deleteItem.value.kuniCd)
+    await configStore.deleteRegion(deleteItem.value.regionCd)
     deleteDialog.value = false
   } catch (error) {
     console.error('削除エラー:', error)
@@ -157,7 +133,6 @@ const doDelete = async () => {
 }
 
 onMounted(() => {
-  configStore.fetchChiiki()
-  configStore.fetchKuni()
+  configStore.fetchRegion()
 })
 </script>

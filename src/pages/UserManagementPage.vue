@@ -189,7 +189,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, shallowRef, toRef, onMounted, computed } from 'vue'
+import { ref, shallowRef, toRef, onMounted } from 'vue'
 import { useAppStore } from '@/stores/appStore'
 import { useUserStore } from '@/stores/userStore'
 import type { UserInfo, CreateUserRequest, UpdateUserRequest } from '@/services/generated/api'

@@ -1,87 +1,86 @@
 import { defineStore } from 'pinia'
 import { ref, type Ref } from 'vue'
 import apiClient from '@/services/httpClient'
-import type { AxiosRequestConfig } from 'axios'
 
-export interface Chiiki {
-  chiikiCd?: number
-  chiikiNm: string
+export interface Region {
+  regionCd?: number
+  regionNm: string
 }
 
-export interface Kuni {
-  kuniCd?: number
-  chiikiCd: number
-  kuniNm: string
+export interface Country {
+  countryCd?: number
+  regionCd: number
+  countryNm: string
 }
 
-export interface Hinmoku {
-  hinmokuCd?: number
-  hinmokuNm: string
-  hinmokuEn?: string
+export interface Product {
+  productCd?: number
+  productNm: string
 }
 
-export interface Youshiki {
-  youshikiId?: number
-  kuniCd: number
-  hinmokuCd: number
-  youshikiNm: string
+export interface ApplicationTemplate {
+  templateId?: number
+  regionCd: number
+  countryCd: number
+  productCd: number
+  templateNm: string
   filePath: string
 }
 
 const baseUrl = '/api/config'
 
 export const useConfigStore = defineStore('config', () => {
-  // ========== 地域数据 ==========
-  const chiikiList = ref<Chiiki[]>([]) as Ref<Chiiki[]>
-  const chiikiLoading = ref(false)
+  // ========== 地域データ ==========
+  const regionList = ref<Region[]>([]) as Ref<Region[]>
+  const regionLoading = ref(false)
 
-  // 地城 CRUD
-  const fetchChiiki = async () => {
+  // 地域 CRUD
+  const fetchRegion = async () => {
     try {
-      chiikiLoading.value = true
-      const response = await apiClient.get(`${baseUrl}/chiiki`)
-      chiikiList.value = response.data.data || []
+      regionLoading.value = true
+      const response = await apiClient.get(`${baseUrl}/region`)
+      regionList.value = response.data.data || []
     } catch (error: any) {
       console.error('地域取得エラー:', error)
     } finally {
-      chiikiLoading.value = false
+      regionLoading.value = false
     }
   }
 
-  const createChiiki = async (data: Chiiki) => {
-    await apiClient.post(`${baseUrl}/chiiki`, data)
-    await fetchChiiki()
+  const createRegion = async (data: Region) => {
+    await apiClient.post(`${baseUrl}/region`, data)
+    await fetchRegion()
   }
 
-  const updateChiiki = async (id: number, data: Chiiki) => {
-    await apiClient.put(`${baseUrl}/chiiki/${id}`, data)
-    await fetchChiiki()
+  const updateRegion = async (id: number, data: Region) => {
+    await apiClient.put(`${baseUrl}/region/${id}`, data)
+    await fetchRegion()
   }
 
-  const deleteChiiki = async (id: number) => {
-    await apiClient.delete(`${baseUrl}/chiiki/${id}`)
-    await fetchChiiki()
+  const deleteRegion = async (id: number) => {
+    await apiClient.delete(`${baseUrl}/region/${id}`)
+    await fetchRegion()
   }
 
-  // ========== 国家数据 ==========
-  const kuniList = ref<Kuni[]>([]) as Ref<Kuni[]>
-  const kuniLoading = ref(false)
+  // ========== 国家データ ==========
+  const countryList = ref<Country[]>([]) as Ref<Country[]>
+  const countryLoading = ref(false)
 
-  const fetchKuni = async () => {
+  const fetchCountry = async () => {
     try {
-      kuniLoading.value = true
-      const response = await apiClient.get(`${baseUrl}/kuni`)
-      kuniList.value = response.data.data || []
+      countryLoading.value = true
+      const response = await apiClient.get(`${baseUrl}/country`)
+      countryList.value = response.data.data || []
     } catch (error: any) {
       console.error('国家取得エラー:', error)
     } finally {
-      kuniLoading.value = false
+      countryLoading.value = false
     }
   }
 
-  const fetchKuniByChiiki = async (chiikiCd: number) => {
+  const fetchCountryByRegion = async (regionCd: number) => {
     try {
-      const response = await apiClient.get(`${baseUrl}/kuni/chiiki/${chiikiCd}`)
+      const response = await apiClient.get(`${baseUrl}/country/region/${regionCd}`)
       return response.data.data || []
     } catch (error: any) {
       console.error('国取得エラー:', error)
@@ -89,112 +88,112 @@ export const useConfigStore = defineStore('config', () => {
     }
   }
 
-  const createKuni = async (data: Kuni) => {
-    await apiClient.post(`${baseUrl}/kuni`, data)
-    await fetchKuni()
+  const createCountry = async (data: Country) => {
+    await apiClient.post(`${baseUrl}/country`, data)
+    await fetchCountry()
   }
 
-  const updateKuni = async (id: number, data: Kuni) => {
-    await apiClient.put(`${baseUrl}/kuni/${id}`, data)
-    await fetchKuni()
+  const updateCountry = async (id: number, data: Country) => {
+    await apiClient.put(`${baseUrl}/country/${id}`, data)
+    await fetchCountry()
   }
 
-  const deleteKuni = async (id: number) => {
-    await apiClient.delete(`${baseUrl}/kuni/${id}`)
-    await fetchKuni()
+  const deleteCountry = async (id: number) => {
+    await apiClient.delete(`${baseUrl}/country/${id}`)
+    await fetchCountry()
   }
 
-  // ========== 品目数据 ==========
-  const hinmokuList = ref<Hinmoku[]>([]) as Ref<Hinmoku[]>
-  const hinmokuLoading = ref(false)
+  // ========== 品目データ ==========
+  const productList = ref<Product[]>([]) as Ref<Product[]>
+  const productLoading = ref(false)
 
-  const fetchHinmoku = async () => {
+  const fetchProduct = async () => {
     try {
-      hinmokuLoading.value = true
-      const response = await apiClient.get(`${baseUrl}/hinmoku`)
-      hinmokuList.value = response.data.data || []
+      productLoading.value = true
+      const response = await apiClient.get(`${baseUrl}/product`)
+      productList.value = response.data.data || []
     } catch (error: any) {
       console.error('品目取得エラー:', error)
     } finally {
-      hinmokuLoading.value = false
+      productLoading.value = false
     }
   }
 
-  const createHinmoku = async (data: Hinmoku) => {
-    await apiClient.post(`${baseUrl}/hinmoku`, data)
-    await fetchHinmoku()
+  const createProduct = async (data: Product) => {
+    await apiClient.post(`${baseUrl}/product`, data)
+    await fetchProduct()
   }
 
-  const updateHinmoku = async (id: number, data: Hinmoku) => {
-    await apiClient.put(`${baseUrl}/hinmoku/${id}`, data)
-    await fetchHinmoku()
+  const updateProduct = async (id: number, data: Product) => {
+    await apiClient.put(`${baseUrl}/product/${id}`, data)
+    await fetchProduct()
   }
 
-  const deleteHinmoku = async (id: number) => {
-    await apiClient.delete(`${baseUrl}/hinmoku/${id}`)
-    await fetchHinmoku()
+  const deleteProduct = async (id: number) => {
+    await apiClient.delete(`${baseUrl}/product/${id}`)
+    await fetchProduct()
   }
 
-  // ========== 申请书模板数据 ==========
-  const youshikiList = ref<Youshiki[]>([]) as Ref<Youshiki[]>
-  const youshikiLoading = ref(false)
+  // ========== 申請書テンプレートデータ ==========
+  const templateList = ref<ApplicationTemplate[]>([]) as Ref<ApplicationTemplate[]>
+  const templateLoading = ref(false)
 
-  const fetchYoushiki = async () => {
+  const fetchTemplate = async () => {
     try {
-      youshikiLoading.value = true
-      const response = await apiClient.get(`${baseUrl}/youshiki`)
-      youshikiList.value = response.data.data || []
+      templateLoading.value = true
+      const response = await apiClient.get(`${baseUrl}/template`)
+      templateList.value = response.data.data || []
     } catch (error: any) {
-      console.error('様式取得エラー:', error)
+      console.error('テンプレート取得エラー:', error)
     } finally {
-      youshikiLoading.value = false
+      templateLoading.value = false
     }
   }
 
-  const createYoushiki = async (data: Youshiki) => {
-    await apiClient.post(`${baseUrl}/youshiki`, data)
-    await fetchYoushiki()
+  const createTemplate = async (data: ApplicationTemplate) => {
+    await apiClient.post(`${baseUrl}/template`, data)
+    await fetchTemplate()
   }
 
-  const updateYoushiki = async (id: number, data: Youshiki) => {
-    await apiClient.put(`${baseUrl}/youshiki/${id}`, data)
-    await fetchYoushiki()
+  const updateTemplate = async (id: number, data: ApplicationTemplate) => {
+    await apiClient.put(`${baseUrl}/template/${id}`, data)
+    await fetchTemplate()
   }
 
-  const deleteYoushiki = async (id: number) => {
-    await apiClient.delete(`${baseUrl}/youshiki/${id}`)
-    await fetchYoushiki()
+  const deleteTemplate = async (id: number) => {
+    await apiClient.delete(`${baseUrl}/template/${id}`)
+    await fetchTemplate()
   }
 
   return {
     // 地域
-    chiikiList,
-    chiikiLoading,
-    fetchChiiki,
-    createChiiki,
-    updateChiiki,
-    deleteChiiki,
+    regionList,
+    regionLoading,
+    fetchRegion,
+    createRegion,
+    updateRegion,
+    deleteRegion,
     // 国家
-    kuniList,
-    kuniLoading,
-    fetchKuni,
-    fetchKuniByChiiki,
-    createKuni,
-    updateKuni,
-    deleteKuni,
+    countryList,
+    countryLoading,
+    fetchCountry,
+    fetchCountryByRegion,
+    createCountry,
+    updateCountry,
+    deleteCountry,
     // 品目
-    hinmokuList,
-    hinmokuLoading,
-    fetchHinmoku,
-    createHinmoku,
-    updateHinmoku,
-    deleteHinmoku,
-    // 申请书模板
-    youshikiList,
-    youshikiLoading,
-    fetchYoushiki,
-    createYoushiki,
-    updateYoushiki,
-    deleteYoushiki,
+    productList,
+    productLoading,
+    fetchProduct,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    // 申請書テンプレート
+    templateList,
+    templateLoading,
+    fetchTemplate,
+    createTemplate,
+    updateTemplate,
+    deleteTemplate,
   }
 })

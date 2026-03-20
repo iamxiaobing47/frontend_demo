@@ -12,12 +12,12 @@
     <!-- 数据表格 -->
     <v-data-table
       :headers="headers"
-      :items="configStore.hinmokuList"
-      :loading="configStore.hinmokuLoading"
+      :items="configStore.productList"
+      :loading="configStore.productLoading"
       hover
     >
-      <template v-slot:item.hinmokuCd="{ item }">
-        <v-chip color="primary" size="small">{{ item.hinmokuCd }}</v-chip>
+      <template v-slot:item.productCd="{ item }">
+        <v-chip color="primary" size="small">{{ item.productCd }}</v-chip>
       </template>
 
       <template v-slot:item.actions="{ item }">
@@ -31,15 +31,10 @@
       <v-card :title="isEditing ? '品目編集' : '品目追加'">
         <v-card-text>
           <v-text-field
-            v-model="form.hinmokuNm"
+            v-model="form.productNm"
             label="品目名"
             required
             :rules="[v => !!v || '品目名は必須です']"
-          />
-          <v-text-field
-            v-model="form.hinmokuEn"
-            label="品目英語名"
-            hint="任意入力"
           />
         </v-card-text>
         <v-card-actions>
@@ -54,7 +49,7 @@
     <v-dialog v-model="deleteDialog" max-width="400">
       <v-card title="削除確認">
         <v-card-text>
-          品目「<span class="font-weight-bold">{{ deleteItem?.hinmokuNm }}</span>」を削除してもよろしいですか？
+          品目「<span class="font-weight-bold">{{ deleteItem?.productNm }}</span>」を削除してもよろしいですか？
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -68,32 +63,30 @@
 
 <script setup lang="ts">
 import { ref, shallowRef, computed, onMounted } from 'vue'
-import { useConfigStore, type Hinmoku } from '@/stores/configStore'
+import { useConfigStore, type Product } from '@/stores/configStore'
 
 const configStore = useConfigStore()
 
 const headers = [
-  { title: '品目コード', key: 'hinmokuCd', align: 'center' },
-  { title: '品目名', key: 'hinmokuNm' },
-  { title: '英語名', key: 'hinmokuEn' },
-  { title: '操作', key: 'actions', align: 'end', sortable: false },
+  { title: '品目コード', key: 'productCd', align: 'center' as const },
+  { title: '品目名', key: 'productNm' },
+  { title: '操作', key: 'actions', align: 'end' as const, sortable: false },
 ]
 
 const dialog = shallowRef(false)
 const deleteDialog = shallowRef(false)
 const saving = ref(false)
 const deleting = ref(false)
-const isEditing = computed(() => !!form.value.hinmokuCd)
+const isEditing = computed(() => !!form.value.productCd)
 
-const defaultForm = (): Hinmoku => ({
-  hinmokuNm: '',
-  hinmokuEn: '',
+const defaultForm = (): Product => ({
+  productNm: '',
 })
 
-const form = ref<Hinmoku>(defaultForm())
-const deleteItem = ref<Hinmoku | null>(null)
+const form = ref<Product>(defaultForm())
+const deleteItem = ref<Product | null>(null)
 
-const openDialog = (item?: Hinmoku) => {
+const openDialog = (item?: Product) => {
   if (item) {
     form.value = { ...item }
   } else {
@@ -103,14 +96,14 @@ const openDialog = (item?: Hinmoku) => {
 }
 
 const save = async () => {
-  if (!form.value.hinmokuNm) return
+  if (!form.value.productNm) return
 
   saving.value = true
   try {
     if (isEditing.value) {
-      await configStore.updateHinmoku(form.value.hinmokuCd!, form.value)
+      await configStore.updateProduct(form.value.productCd!, form.value)
     } else {
-      await configStore.createHinmoku(form.value)
+      await configStore.createProduct(form.value)
     }
     dialog.value = false
   } catch (error) {
@@ -120,17 +113,17 @@ const save = async () => {
   }
 }
 
-const confirmDelete = (item: Hinmoku) => {
+const confirmDelete = (item: Product) => {
   deleteItem.value = item
   deleteDialog.value = true
 }
 
 const doDelete = async () => {
-  if (!deleteItem.value?.hinmokuCd) return
+  if (!deleteItem.value?.productCd) return
 
   deleting.value = true
   try {
-    await configStore.deleteHinmoku(deleteItem.value.hinmokuCd)
+    await configStore.deleteProduct(deleteItem.value.productCd)
     deleteDialog.value = false
   } catch (error) {
     console.error('削除エラー:', error)
@@ -140,6 +133,6 @@ const doDelete = async () => {
 }
 
 onMounted(() => {
-  configStore.fetchHinmoku()
+  configStore.fetchProduct()
 })
 </script>

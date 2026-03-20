@@ -83,7 +83,7 @@ export const useMenuStore = defineStore('menu', {
           const convertToMenuItem = (menu: any): MenuItem => {
             return {
               id: menu.pk?.toString() || '',
-              title: menu.chineseName || menu.englishName || '',
+              title: menu.name || '',
               path: menu.path || '',
               icon: menu.icon || '',
               parentId: menu.parentId && menu.parentId !== 0 ? menu.parentId.toString() : null,
