@@ -1,13 +1,17 @@
 <template>
   <v-sheet border rounded>
     <v-data-table-server
+      v-model:options="localOptions"
       :headers="headers"
       :items="userStore.users"
       :loading="userStore.loading"
-      :items-per-page="userStore.pagination.pageSize"
-      :page="userStore.pagination.pageNum"
       :items-length="userStore.pagination.total"
-      @update:options="loadUsers"
+      :items-per-page-options="[
+        { value: 10, title: '10' },
+        { value: 25, title: '25' },
+        { value: 50, title: '50' },
+        { value: 100, title: '100' },
+      ]"
     >
       <template v-slot:top>
         <v-toolbar flat>
@@ -126,14 +130,6 @@
           </v-col>
 
           <v-col cols="12" md="6">
-            <v-text-field
-              v-model="formModel.userId"
-              label="用户 ID"
-              :disabled="isEditing"
-            ></v-text-field>
-          </v-col>
-
-          <v-col cols="12" md="6">
             <v-text-field v-model="formModel.userName" label="用户名"></v-text-field>
           </v-col>
 
@@ -146,11 +142,18 @@
                 { title: '政府职员', value: 'STAFF_USER' },
               ]"
               :rules="[rules.required]"
+              @update:model-value="onUserTypeChange"
             ></v-select>
           </v-col>
 
           <v-col cols="12" md="6">
-            <v-text-field v-model="formModel.orgId" label="组织 ID"></v-text-field>
+            <v-select
+              v-model="formModel.orgId"
+              label="组织 *"
+              :items="organizationOptions"
+              :rules="[rules.required]"
+              :loading="loadingOrganizations"
+            ></v-select>
           </v-col>
         </v-row>
       </template>
@@ -189,13 +192,71 @@
 </template>
 
 <script setup lang="ts">
-import { ref, shallowRef, toRef, onMounted } from 'vue'
+import { ref, shallowRef, toRef, onMounted, watch } from 'vue'
 import { useAppStore } from '@/stores/appStore'
 import { useUserStore } from '@/stores/userStore'
+import { DefaultApi } from '@/services/generated/api'
+import apiClient from '@/services/httpClient'
 import type { UserInfo, CreateUserRequest, UpdateUserRequest } from '@/services/generated/api'
 
 const appStore = useAppStore()
 const userStore = useUserStore()
+
+// 创建 API 实例
+const api = new DefaultApi(undefined, '', apiClient)
+
+// 本地分页状态，使用 v-model:options 绑定
+const localOptions = ref({
+  page: 1,
+  itemsPerPage: 10,
+})
+
+// 标记是否首次加载
+let isInitialLoad = true
+
+// 组织选项
+const organizationOptions = ref<{ title: string; value: string }[]>([])
+const loadingOrganizations = ref(false)
+
+// 加载组织列表
+const loadOrganizations = async (userType: string) => {
+  loadingOrganizations.value = true
+  try {
+    if (userType === 'BUSINESS_USER') {
+      const response = await apiClient.get('/api/users/organizations/business')
+      organizationOptions.value = (response.data.data || []).map((item: any) => ({
+        title: item.title,
+        value: item.value,
+      }))
+    } else if (userType === 'STAFF_USER') {
+      const response = await apiClient.get('/api/users/organizations/region')
+      organizationOptions.value = (response.data.data || []).map((item: any) => ({
+        title: item.title,
+        value: item.value,
+      }))
+    }
+  } catch (error: any) {
+    console.error('加载组织列表失败:', error)
+    organizationOptions.value = []
+  } finally {
+    loadingOrganizations.value = false
+  }
+}
+
+// 用户类型变化时重新加载组织列表
+const onUserTypeChange = (userType: string) => {
+  formModel.value.orgId = '' // 清空已选组织
+  loadOrganizations(userType)
+}
+
+// 监听分页选项变化
+watch(
+  () => localOptions.value,
+  (newOptions) => {
+    loadUsers(newOptions)
+  },
+  { deep: true }
+)
 
 // 验证规则
 const rules = {
@@ -209,7 +270,6 @@ const rules = {
 
 interface FormModel {
   id: number
-  userId: string
   email: string
   password: string
   userName: string
@@ -220,7 +280,6 @@ interface FormModel {
 function createNewRecord(): FormModel {
   return {
     id: 0,
-    userId: '',
     email: '',
     password: '',
     userName: '',
@@ -239,6 +298,9 @@ const deleteUserEmail = ref('')
 const deleteUserItem = ref<UserInfo | null>(null)
 const searchEmail = ref('')
 
+// 编辑时用户的 pk
+let editingUserPk: string = ''
+
 // 分页表头
 const headers = [
   { title: '用户 ID', key: 'userId', align: 'start' as const },
@@ -253,6 +315,13 @@ const headers = [
 const loadUsers = async (options: { page?: number; itemsPerPage?: number }) => {
   const page = options.page || 1
   const pageSize = options.itemsPerPage || 10
+
+  // 防止死循环：如果和当前 store 中的值相同，则不重复请求
+  if (page === userStore.pagination.pageNum && pageSize === userStore.pagination.pageSize && !isInitialLoad) {
+    return
+  }
+
+  isInitialLoad = false
   await userStore.fetchUsers(page, pageSize)
 }
 
@@ -261,7 +330,8 @@ const handleSearch = async () => {
   userStore.setSearchCriteria({
     email: searchEmail.value || undefined,
   })
-  await userStore.fetchUsers(1, userStore.pagination.pageSize)
+  // 重置到第一页，保持当前每页数量
+  localOptions.value = { page: 1, itemsPerPage: localOptions.value.itemsPerPage }
 }
 
 // 添加用户
@@ -274,13 +344,16 @@ const add = () => {
 const edit = (item: UserInfo) => {
   formModel.value = {
     id: 1, // 标记为编辑模式
-    userId: item.userId || '',
     email: item.email || '',
     password: '',
     userName: item.userName || '',
     userType: item.userType || '',
     orgId: item.orgId || '',
   }
+  // 保存用户 pk 用于更新（转换为字符串）
+  editingUserPk = item.pk?.toString() || ''
+  // 加载对应的组织列表
+  loadOrganizations(item.userType || '')
   dialog.value = true
 }
 
@@ -298,13 +371,11 @@ const doDelete = async () => {
   deleting.value = true
   try {
     await userStore.deleteUser(
-      deleteUserItem.value.userId || '',
+      deleteUserItem.value.pk?.toString() || '',
       deleteUserItem.value.userType || ''
     )
-    await loadUsers({
-      page: userStore.pagination.pageNum,
-      itemsPerPage: userStore.pagination.pageSize,
-    })
+    // 刷新当前页
+    localOptions.value = { page: localOptions.value.page, itemsPerPage: localOptions.value.itemsPerPage }
     deleteDialog.value = false
   } catch (error: any) {
     console.error('删除失败:', error)
@@ -318,20 +389,19 @@ const save = async () => {
   saving.value = true
   try {
     if (isEditing.value) {
-      // 更新用户
+      // 更新用户：使用编辑时保存的 pk
       const updateData: UpdateUserRequest = {
-        userId: formModel.value.userId,
+        userId: editingUserPk,
         userType: formModel.value.userType,
         name: formModel.value.userName,
         orgId: formModel.value.orgId,
       }
       await userStore.updateUser(updateData)
     } else {
-      // 创建用户
+      // 创建用户：userId 由后端自动生成，不需要传递
       const createData: CreateUserRequest = {
         email: formModel.value.email,
         password: formModel.value.password,
-        userId: formModel.value.userId,
         userType: formModel.value.userType,
         userName: formModel.value.userName,
         orgId: formModel.value.orgId,
@@ -340,10 +410,8 @@ const save = async () => {
     }
 
     dialog.value = false
-    await loadUsers({
-      page: userStore.pagination.pageNum,
-      itemsPerPage: userStore.pagination.pageSize,
-    })
+    // 刷新当前页
+    localOptions.value = { page: localOptions.value.page, itemsPerPage: localOptions.value.itemsPerPage }
   } catch (error: any) {
     console.error('保存失败:', error)
   } finally {
@@ -353,6 +421,7 @@ const save = async () => {
 
 onMounted(() => {
   appStore.setBreadcrumbs([{ title: '用户管理' }])
-  loadUsers({ page: 1, itemsPerPage: 10 })
+  // 初始加载，直接设置 localOptions 触发 watch
+  localOptions.value = { page: 1, itemsPerPage: 10 }
 })
 </script>

@@ -7,9 +7,8 @@ import type {
   UpdateUserRequest,
   DeleteUserRequest,
   UserInfo,
-  BatchUserQueryRequest,
   PageUserQueryRequest,
-  PageResultUserInfo,
+  IPageUserInfo,
 } from '@/services/generated/api'
 
 // 使用自定义的 httpClient 创建 API 实例
@@ -60,21 +59,21 @@ export const useUserStore = defineStore('user', () => {
       }
 
       const response = await api.pageUsers(request)
-      const pageResult = response.data.data as PageResultUserInfo
+      const pageResult = response.data.data as IPageUserInfo
 
       console.log('PageResult:', pageResult)
       console.log('Total:', pageResult?.total)
 
-      users.value = pageResult.records || []
+      users.value = pageResult?.records || []
 
       // 使用 Object.assign 确保响应式更新
       Object.assign(pagination.value, {
-        pageNum: Number(pageResult.pageNum) || 1,
-        pageSize: Number(pageResult.pageSize) || 10,
+        pageNum: Number(pageResult.current) || 1,
+        pageSize: Number(pageResult.size) || 10,
         total: Number(pageResult.total) || 0,
         pages: Number(pageResult.pages) || 0,
-        hasPrevious: Boolean(pageResult.hasPrevious),
-        hasNext: Boolean(pageResult.hasNext),
+        hasPrevious: (Number(pageResult.current) || 1) > 1,
+        hasNext: (Number(pageResult.current) || 1) < Math.ceil((Number(pageResult.total) || 0) / (Number(pageResult.size) || 10)),
       })
 
       loading.value = false

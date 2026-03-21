@@ -23,12 +23,22 @@ import type { RequestArgs } from './base';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerMap } from './base';
 
-export interface BatchUserQueryRequest {
-    'userIds': Array<string>;
+export interface ApplicationTemplateEntity {
+    'templateId'?: number;
+    'regionCd'?: number;
+    'countryCd'?: number;
+    'productCd'?: number;
+    'templateNm'?: string;
+    'filePath'?: string;
+    'createdAt'?: string;
+    'updatedAt'?: string;
 }
-export interface ChangePasswordRequest {
-    'currentPassword': string;
-    'newPassword': string;
+export interface CountryEntity {
+    'countryCd'?: number;
+    'regionCd'?: number;
+    'countryNm'?: string;
+    'createdAt'?: string;
+    'updatedAt'?: string;
 }
 export interface CreateUserRequest {
     'email': string;
@@ -42,6 +52,16 @@ export interface DeleteUserRequest {
     'userId'?: string;
     'userType'?: string;
 }
+export interface IPageUserInfo {
+    /**
+     * @deprecated
+     */
+    'pages'?: number;
+    'size'?: number;
+    'current'?: number;
+    'total'?: number;
+    'records'?: Array<UserInfo>;
+}
 export interface LoginRequest {
     'email': string;
     'password': string;
@@ -52,23 +72,13 @@ export interface LoginResponse {
 }
 export interface NavigationDTO {
     'pk'?: number;
-    'chineseName'?: string;
-    'englishName'?: string;
+    'name'?: string;
     'path'?: string;
     'icon'?: string;
     'sortOrder'?: number;
     'parentId'?: number;
     'createdAt'?: string;
     'updatedAt'?: string;
-}
-export interface PageResultUserInfo {
-    'records'?: Array<UserInfo>;
-    'total'?: number;
-    'pageNum'?: number;
-    'pageSize'?: number;
-    'pages'?: number;
-    'hasPrevious'?: boolean;
-    'hasNext'?: boolean;
 }
 export interface PageUserQueryRequest {
     'pageNum': number;
@@ -77,6 +87,39 @@ export interface PageUserQueryRequest {
     'email'?: string;
     'userName'?: string;
 }
+export interface ProductEntity {
+    'productCd'?: number;
+    'productNm'?: string;
+    'createdAt'?: string;
+    'updatedAt'?: string;
+}
+export interface RegionEntity {
+    'regionCd'?: number;
+    'regionNm'?: string;
+    'createdAt'?: string;
+    'updatedAt'?: string;
+}
+export interface ResponseIPageUserInfo {
+    'success'?: boolean;
+    'data'?: IPageUserInfo;
+    'messageCode'?: string;
+    'messageArgs'?: Array<string>;
+    'message'?: string;
+}
+export interface ResponseListApplicationTemplateEntity {
+    'success'?: boolean;
+    'data'?: Array<ApplicationTemplateEntity>;
+    'messageCode'?: string;
+    'messageArgs'?: Array<string>;
+    'message'?: string;
+}
+export interface ResponseListCountryEntity {
+    'success'?: boolean;
+    'data'?: Array<CountryEntity>;
+    'messageCode'?: string;
+    'messageArgs'?: Array<string>;
+    'message'?: string;
+}
 export interface ResponseListNavigationDTO {
     'success'?: boolean;
     'data'?: Array<NavigationDTO>;
@@ -84,9 +127,16 @@ export interface ResponseListNavigationDTO {
     'messageArgs'?: Array<string>;
     'message'?: string;
 }
-export interface ResponseListUserInfo {
+export interface ResponseListProductEntity {
     'success'?: boolean;
-    'data'?: Array<UserInfo>;
+    'data'?: Array<ProductEntity>;
+    'messageCode'?: string;
+    'messageArgs'?: Array<string>;
+    'message'?: string;
+}
+export interface ResponseListRegionEntity {
+    'success'?: boolean;
+    'data'?: Array<RegionEntity>;
     'messageCode'?: string;
     'messageArgs'?: Array<string>;
     'message'?: string;
@@ -98,13 +148,6 @@ export interface ResponseLoginResponse {
     'messageArgs'?: Array<string>;
     'message'?: string;
 }
-export interface ResponsePageResultUserInfo {
-    'success'?: boolean;
-    'data'?: PageResultUserInfo;
-    'messageCode'?: string;
-    'messageArgs'?: Array<string>;
-    'message'?: string;
-}
 export interface ResponseString {
     'success'?: boolean;
     'data'?: string;
@@ -112,9 +155,9 @@ export interface ResponseString {
     'messageArgs'?: Array<string>;
     'message'?: string;
 }
-export interface ResponseUserInfoEntity {
+export interface ResponseUserInfo {
     'success'?: boolean;
-    'data'?: UserInfoEntity;
+    'data'?: UserInfo;
     'messageCode'?: string;
     'messageArgs'?: Array<string>;
     'message'?: string;
@@ -133,22 +176,11 @@ export interface UpdateUserRequest {
     'orgId'?: string;
 }
 export interface UserInfo {
-    'userId'?: string;
+    'pk'?: number;
     'userType'?: string;
     'email'?: string;
     'userName'?: string;
     'orgId'?: string;
-    'orgName'?: string;
-    'orgType'?: string;
-}
-export interface UserInfoEntity {
-    'userId'?: string;
-    'userType'?: string;
-    'email'?: string;
-    'userName'?: string;
-    'orgId'?: string;
-    'orgName'?: string;
-    'orgType'?: string;
 }
 
 /**
@@ -157,16 +189,50 @@ export interface UserInfoEntity {
 export const DefaultApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 根据用户ID列表批量查询用户信息
-         * @summary 批量查询用户信息
-         * @param {BatchUserQueryRequest} batchUserQueryRequest 
+         * テンプレートを削除します
+         * @summary テンプレート削除
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        batchGetUsers: async (batchUserQueryRequest: BatchUserQueryRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'batchUserQueryRequest' is not null or undefined
-            assertParamExists('batchGetUsers', 'batchUserQueryRequest', batchUserQueryRequest)
-            const localVarPath = `/api/users/batch`;
+        _delete: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('_delete', 'id', id)
+            const localVarPath = `/api/config/template/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 新しいテンプレートを作成します
+         * @summary テンプレート作成
+         * @param {ApplicationTemplateEntity} applicationTemplateEntity 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        create: async (applicationTemplateEntity: ApplicationTemplateEntity, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'applicationTemplateEntity' is not null or undefined
+            assertParamExists('create', 'applicationTemplateEntity', applicationTemplateEntity)
+            const localVarPath = `/api/config/template`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -184,7 +250,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(batchUserQueryRequest, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(applicationTemplateEntity, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -192,16 +258,16 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * 修改当前用户密码
-         * @summary 修改密码
-         * @param {ChangePasswordRequest} changePasswordRequest 
+         * 新しい地域を作成します
+         * @summary 地域作成
+         * @param {RegionEntity} regionEntity 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        changePassword: async (changePasswordRequest: ChangePasswordRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'changePasswordRequest' is not null or undefined
-            assertParamExists('changePassword', 'changePasswordRequest', changePasswordRequest)
-            const localVarPath = `/api/password`;
+        create1: async (regionEntity: RegionEntity, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'regionEntity' is not null or undefined
+            assertParamExists('create1', 'regionEntity', regionEntity)
+            const localVarPath = `/api/config/region`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -209,7 +275,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
                 baseOptions = configuration.baseOptions;
             }
 
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
@@ -219,7 +285,77 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(changePasswordRequest, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(regionEntity, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 新しい品目を作成します
+         * @summary 品目作成
+         * @param {ProductEntity} productEntity 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        create2: async (productEntity: ProductEntity, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'productEntity' is not null or undefined
+            assertParamExists('create2', 'productEntity', productEntity)
+            const localVarPath = `/api/config/product`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(productEntity, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 新しい国家を作成します
+         * @summary 国家作成
+         * @param {CountryEntity} countryEntity 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        create3: async (countryEntity: CountryEntity, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'countryEntity' is not null or undefined
+            assertParamExists('create3', 'countryEntity', countryEntity)
+            const localVarPath = `/api/config/country`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(countryEntity, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -306,6 +442,108 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
+         * 地域を削除します
+         * @summary 地域削除
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        delete1: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('delete1', 'id', id)
+            const localVarPath = `/api/config/region/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 品目を削除します
+         * @summary 品目削除
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        delete2: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('delete2', 'id', id)
+            const localVarPath = `/api/config/product/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 国家を削除します
+         * @summary 国家削除
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        delete3: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('delete3', 'id', id)
+            const localVarPath = `/api/config/country/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * 删除当前用户
          * @summary 删除用户
          * @param {DeleteUserRequest} deleteUserRequest 
@@ -341,7 +579,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * 根据用户ID获取用户信息
+         * 根据用户 ID 获取用户信息
          * @summary 获取用户信息
          * @param {string} userId 
          * @param {*} [options] Override http request option.
@@ -352,6 +590,205 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             assertParamExists('getUser', 'userId', userId)
             const localVarPath = `/api/users/{userId}`
                 .replace(`{${"userId"}}`, encodeURIComponent(String(userId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 根据当前登录用户返回对应的导航菜单
+         * @summary 获取用户导航菜单
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUserNavigations: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/navigations/user`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 条件を指定してテンプレートの一覧を取得します
+         * @summary テンプレート一覧取得
+         * @param {number} [regionCd] 
+         * @param {number} [countryCd] 
+         * @param {number} [productCd] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        list: async (regionCd?: number, countryCd?: number, productCd?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/config/template`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (regionCd !== undefined) {
+                localVarQueryParameter['regionCd'] = regionCd;
+            }
+
+            if (countryCd !== undefined) {
+                localVarQueryParameter['countryCd'] = countryCd;
+            }
+
+            if (productCd !== undefined) {
+                localVarQueryParameter['productCd'] = productCd;
+            }
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * すべての地域を取得します
+         * @summary 地域一覧取得
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        list1: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/config/region`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * すべての品目を取得します
+         * @summary 品目一覧取得
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        list2: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/config/product`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * すべての国家を取得します
+         * @summary 国家一覧取得
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        list3: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/config/country`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 地域コードを指定して国家の一覧を取得します
+         * @summary 地域別国家取得
+         * @param {number} regionCd 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listByRegion: async (regionCd: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'regionCd' is not null or undefined
+            assertParamExists('listByRegion', 'regionCd', regionCd)
+            const localVarPath = `/api/config/country/region/{regionCd}`
+                .replace(`{${"regionCd"}}`, encodeURIComponent(String(regionCd)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -410,7 +847,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * 清除认证信息并删除refresh token
+         * 清除认证信息并删除 refresh token
          * @summary 用户登出
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -535,6 +972,162 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
+         * テンプレート情報を更新します
+         * @summary テンプレート更新
+         * @param {number} id 
+         * @param {ApplicationTemplateEntity} applicationTemplateEntity 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        update: async (id: number, applicationTemplateEntity: ApplicationTemplateEntity, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('update', 'id', id)
+            // verify required parameter 'applicationTemplateEntity' is not null or undefined
+            assertParamExists('update', 'applicationTemplateEntity', applicationTemplateEntity)
+            const localVarPath = `/api/config/template/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(applicationTemplateEntity, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 地域情報を更新します
+         * @summary 地域更新
+         * @param {number} id 
+         * @param {RegionEntity} regionEntity 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        update1: async (id: number, regionEntity: RegionEntity, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('update1', 'id', id)
+            // verify required parameter 'regionEntity' is not null or undefined
+            assertParamExists('update1', 'regionEntity', regionEntity)
+            const localVarPath = `/api/config/region/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(regionEntity, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 品目情報を更新します
+         * @summary 品目更新
+         * @param {number} id 
+         * @param {ProductEntity} productEntity 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        update2: async (id: number, productEntity: ProductEntity, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('update2', 'id', id)
+            // verify required parameter 'productEntity' is not null or undefined
+            assertParamExists('update2', 'productEntity', productEntity)
+            const localVarPath = `/api/config/product/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(productEntity, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 国家情報を更新します
+         * @summary 国家更新
+         * @param {number} id 
+         * @param {CountryEntity} countryEntity 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        update3: async (id: number, countryEntity: CountryEntity, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('update3', 'id', id)
+            // verify required parameter 'countryEntity' is not null or undefined
+            assertParamExists('update3', 'countryEntity', countryEntity)
+            const localVarPath = `/api/config/country/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(countryEntity, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * 更新当前用户信息
          * @summary 更新用户信息
          * @param {UpdateUserRequest} updateUserRequest 
@@ -579,29 +1172,68 @@ export const DefaultApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = DefaultApiAxiosParamCreator(configuration)
     return {
         /**
-         * 根据用户ID列表批量查询用户信息
-         * @summary 批量查询用户信息
-         * @param {BatchUserQueryRequest} batchUserQueryRequest 
+         * テンプレートを削除します
+         * @summary テンプレート削除
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async batchGetUsers(batchUserQueryRequest: BatchUserQueryRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseListUserInfo>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.batchGetUsers(batchUserQueryRequest, options);
+        async _delete(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseVoid>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator._delete(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.batchGetUsers']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi._delete']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 修改当前用户密码
-         * @summary 修改密码
-         * @param {ChangePasswordRequest} changePasswordRequest 
+         * 新しいテンプレートを作成します
+         * @summary テンプレート作成
+         * @param {ApplicationTemplateEntity} applicationTemplateEntity 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async changePassword(changePasswordRequest: ChangePasswordRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseVoid>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.changePassword(changePasswordRequest, options);
+        async create(applicationTemplateEntity: ApplicationTemplateEntity, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseVoid>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.create(applicationTemplateEntity, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.changePassword']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.create']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 新しい地域を作成します
+         * @summary 地域作成
+         * @param {RegionEntity} regionEntity 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async create1(regionEntity: RegionEntity, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseVoid>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.create1(regionEntity, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.create1']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 新しい品目を作成します
+         * @summary 品目作成
+         * @param {ProductEntity} productEntity 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async create2(productEntity: ProductEntity, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseVoid>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.create2(productEntity, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.create2']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 新しい国家を作成します
+         * @summary 国家作成
+         * @param {CountryEntity} countryEntity 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async create3(countryEntity: CountryEntity, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseVoid>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.create3(countryEntity, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.create3']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -632,6 +1264,45 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * 地域を削除します
+         * @summary 地域削除
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async delete1(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseVoid>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.delete1(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.delete1']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 品目を削除します
+         * @summary 品目削除
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async delete2(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseVoid>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.delete2(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.delete2']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 国家を削除します
+         * @summary 国家削除
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async delete3(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseVoid>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.delete3(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.delete3']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * 删除当前用户
          * @summary 删除用户
          * @param {DeleteUserRequest} deleteUserRequest 
@@ -645,16 +1316,92 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 根据用户ID获取用户信息
+         * 根据用户 ID 获取用户信息
          * @summary 获取用户信息
          * @param {string} userId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getUser(userId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseUserInfoEntity>> {
+        async getUser(userId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseUserInfo>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getUser(userId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.getUser']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 根据当前登录用户返回对应的导航菜单
+         * @summary 获取用户导航菜单
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getUserNavigations(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseListNavigationDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getUserNavigations(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.getUserNavigations']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 条件を指定してテンプレートの一覧を取得します
+         * @summary テンプレート一覧取得
+         * @param {number} [regionCd] 
+         * @param {number} [countryCd] 
+         * @param {number} [productCd] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async list(regionCd?: number, countryCd?: number, productCd?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseListApplicationTemplateEntity>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.list(regionCd, countryCd, productCd, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.list']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * すべての地域を取得します
+         * @summary 地域一覧取得
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async list1(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseListRegionEntity>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.list1(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.list1']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * すべての品目を取得します
+         * @summary 品目一覧取得
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async list2(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseListProductEntity>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.list2(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.list2']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * すべての国家を取得します
+         * @summary 国家一覧取得
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async list3(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseListCountryEntity>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.list3(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.list3']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 地域コードを指定して国家の一覧を取得します
+         * @summary 地域別国家取得
+         * @param {number} regionCd 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async listByRegion(regionCd: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseListCountryEntity>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.listByRegion(regionCd, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.listByRegion']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -671,7 +1418,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 清除认证信息并删除refresh token
+         * 清除认证信息并删除 refresh token
          * @summary 用户登出
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -689,7 +1436,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async pageUsers(pageUserQueryRequest: PageUserQueryRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponsePageResultUserInfo>> {
+        async pageUsers(pageUserQueryRequest: PageUserQueryRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseIPageUserInfo>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.pageUsers(pageUserQueryRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.pageUsers']?.[localVarOperationServerIndex]?.url;
@@ -720,6 +1467,62 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * テンプレート情報を更新します
+         * @summary テンプレート更新
+         * @param {number} id 
+         * @param {ApplicationTemplateEntity} applicationTemplateEntity 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async update(id: number, applicationTemplateEntity: ApplicationTemplateEntity, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseVoid>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.update(id, applicationTemplateEntity, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.update']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 地域情報を更新します
+         * @summary 地域更新
+         * @param {number} id 
+         * @param {RegionEntity} regionEntity 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async update1(id: number, regionEntity: RegionEntity, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseVoid>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.update1(id, regionEntity, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.update1']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 品目情報を更新します
+         * @summary 品目更新
+         * @param {number} id 
+         * @param {ProductEntity} productEntity 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async update2(id: number, productEntity: ProductEntity, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseVoid>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.update2(id, productEntity, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.update2']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 国家情報を更新します
+         * @summary 国家更新
+         * @param {number} id 
+         * @param {CountryEntity} countryEntity 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async update3(id: number, countryEntity: CountryEntity, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseVoid>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.update3(id, countryEntity, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.update3']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * 更新当前用户信息
          * @summary 更新用户信息
          * @param {UpdateUserRequest} updateUserRequest 
@@ -742,24 +1545,54 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
     const localVarFp = DefaultApiFp(configuration)
     return {
         /**
-         * 根据用户ID列表批量查询用户信息
-         * @summary 批量查询用户信息
-         * @param {BatchUserQueryRequest} batchUserQueryRequest 
+         * テンプレートを削除します
+         * @summary テンプレート削除
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        batchGetUsers(batchUserQueryRequest: BatchUserQueryRequest, options?: RawAxiosRequestConfig): AxiosPromise<ResponseListUserInfo> {
-            return localVarFp.batchGetUsers(batchUserQueryRequest, options).then((request) => request(axios, basePath));
+        _delete(id: number, options?: RawAxiosRequestConfig): AxiosPromise<ResponseVoid> {
+            return localVarFp._delete(id, options).then((request) => request(axios, basePath));
         },
         /**
-         * 修改当前用户密码
-         * @summary 修改密码
-         * @param {ChangePasswordRequest} changePasswordRequest 
+         * 新しいテンプレートを作成します
+         * @summary テンプレート作成
+         * @param {ApplicationTemplateEntity} applicationTemplateEntity 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        changePassword(changePasswordRequest: ChangePasswordRequest, options?: RawAxiosRequestConfig): AxiosPromise<ResponseVoid> {
-            return localVarFp.changePassword(changePasswordRequest, options).then((request) => request(axios, basePath));
+        create(applicationTemplateEntity: ApplicationTemplateEntity, options?: RawAxiosRequestConfig): AxiosPromise<ResponseVoid> {
+            return localVarFp.create(applicationTemplateEntity, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 新しい地域を作成します
+         * @summary 地域作成
+         * @param {RegionEntity} regionEntity 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        create1(regionEntity: RegionEntity, options?: RawAxiosRequestConfig): AxiosPromise<ResponseVoid> {
+            return localVarFp.create1(regionEntity, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 新しい品目を作成します
+         * @summary 品目作成
+         * @param {ProductEntity} productEntity 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        create2(productEntity: ProductEntity, options?: RawAxiosRequestConfig): AxiosPromise<ResponseVoid> {
+            return localVarFp.create2(productEntity, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 新しい国家を作成します
+         * @summary 国家作成
+         * @param {CountryEntity} countryEntity 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        create3(countryEntity: CountryEntity, options?: RawAxiosRequestConfig): AxiosPromise<ResponseVoid> {
+            return localVarFp.create3(countryEntity, options).then((request) => request(axios, basePath));
         },
         /**
          * 创建测试用户
@@ -783,6 +1616,36 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.createUser(createUserRequest, options).then((request) => request(axios, basePath));
         },
         /**
+         * 地域を削除します
+         * @summary 地域削除
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        delete1(id: number, options?: RawAxiosRequestConfig): AxiosPromise<ResponseVoid> {
+            return localVarFp.delete1(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 品目を削除します
+         * @summary 品目削除
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        delete2(id: number, options?: RawAxiosRequestConfig): AxiosPromise<ResponseVoid> {
+            return localVarFp.delete2(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 国家を削除します
+         * @summary 国家削除
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        delete3(id: number, options?: RawAxiosRequestConfig): AxiosPromise<ResponseVoid> {
+            return localVarFp.delete3(id, options).then((request) => request(axios, basePath));
+        },
+        /**
          * 删除当前用户
          * @summary 删除用户
          * @param {DeleteUserRequest} deleteUserRequest 
@@ -793,14 +1656,72 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.deleteUser(deleteUserRequest, options).then((request) => request(axios, basePath));
         },
         /**
-         * 根据用户ID获取用户信息
+         * 根据用户 ID 获取用户信息
          * @summary 获取用户信息
          * @param {string} userId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getUser(userId: string, options?: RawAxiosRequestConfig): AxiosPromise<ResponseUserInfoEntity> {
+        getUser(userId: string, options?: RawAxiosRequestConfig): AxiosPromise<ResponseUserInfo> {
             return localVarFp.getUser(userId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 根据当前登录用户返回对应的导航菜单
+         * @summary 获取用户导航菜单
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUserNavigations(options?: RawAxiosRequestConfig): AxiosPromise<ResponseListNavigationDTO> {
+            return localVarFp.getUserNavigations(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 条件を指定してテンプレートの一覧を取得します
+         * @summary テンプレート一覧取得
+         * @param {number} [regionCd] 
+         * @param {number} [countryCd] 
+         * @param {number} [productCd] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        list(regionCd?: number, countryCd?: number, productCd?: number, options?: RawAxiosRequestConfig): AxiosPromise<ResponseListApplicationTemplateEntity> {
+            return localVarFp.list(regionCd, countryCd, productCd, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * すべての地域を取得します
+         * @summary 地域一覧取得
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        list1(options?: RawAxiosRequestConfig): AxiosPromise<ResponseListRegionEntity> {
+            return localVarFp.list1(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * すべての品目を取得します
+         * @summary 品目一覧取得
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        list2(options?: RawAxiosRequestConfig): AxiosPromise<ResponseListProductEntity> {
+            return localVarFp.list2(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * すべての国家を取得します
+         * @summary 国家一覧取得
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        list3(options?: RawAxiosRequestConfig): AxiosPromise<ResponseListCountryEntity> {
+            return localVarFp.list3(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 地域コードを指定して国家の一覧を取得します
+         * @summary 地域別国家取得
+         * @param {number} regionCd 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listByRegion(regionCd: number, options?: RawAxiosRequestConfig): AxiosPromise<ResponseListCountryEntity> {
+            return localVarFp.listByRegion(regionCd, options).then((request) => request(axios, basePath));
         },
         /**
          * 使用邮箱和密码登录
@@ -813,7 +1734,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.login(loginRequest, options).then((request) => request(axios, basePath));
         },
         /**
-         * 清除认证信息并删除refresh token
+         * 清除认证信息并删除 refresh token
          * @summary 用户登出
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -828,7 +1749,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        pageUsers(pageUserQueryRequest: PageUserQueryRequest, options?: RawAxiosRequestConfig): AxiosPromise<ResponsePageResultUserInfo> {
+        pageUsers(pageUserQueryRequest: PageUserQueryRequest, options?: RawAxiosRequestConfig): AxiosPromise<ResponseIPageUserInfo> {
             return localVarFp.pageUsers(pageUserQueryRequest, options).then((request) => request(axios, basePath));
         },
         /**
@@ -850,6 +1771,50 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.test(options).then((request) => request(axios, basePath));
         },
         /**
+         * テンプレート情報を更新します
+         * @summary テンプレート更新
+         * @param {number} id 
+         * @param {ApplicationTemplateEntity} applicationTemplateEntity 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        update(id: number, applicationTemplateEntity: ApplicationTemplateEntity, options?: RawAxiosRequestConfig): AxiosPromise<ResponseVoid> {
+            return localVarFp.update(id, applicationTemplateEntity, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 地域情報を更新します
+         * @summary 地域更新
+         * @param {number} id 
+         * @param {RegionEntity} regionEntity 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        update1(id: number, regionEntity: RegionEntity, options?: RawAxiosRequestConfig): AxiosPromise<ResponseVoid> {
+            return localVarFp.update1(id, regionEntity, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 品目情報を更新します
+         * @summary 品目更新
+         * @param {number} id 
+         * @param {ProductEntity} productEntity 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        update2(id: number, productEntity: ProductEntity, options?: RawAxiosRequestConfig): AxiosPromise<ResponseVoid> {
+            return localVarFp.update2(id, productEntity, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 国家情報を更新します
+         * @summary 国家更新
+         * @param {number} id 
+         * @param {CountryEntity} countryEntity 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        update3(id: number, countryEntity: CountryEntity, options?: RawAxiosRequestConfig): AxiosPromise<ResponseVoid> {
+            return localVarFp.update3(id, countryEntity, options).then((request) => request(axios, basePath));
+        },
+        /**
          * 更新当前用户信息
          * @summary 更新用户信息
          * @param {UpdateUserRequest} updateUserRequest 
@@ -867,25 +1832,58 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
  */
 export class DefaultApi extends BaseAPI {
     /**
-     * 根据用户ID列表批量查询用户信息
-     * @summary 批量查询用户信息
-     * @param {BatchUserQueryRequest} batchUserQueryRequest 
+     * テンプレートを削除します
+     * @summary テンプレート削除
+     * @param {number} id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public batchGetUsers(batchUserQueryRequest: BatchUserQueryRequest, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).batchGetUsers(batchUserQueryRequest, options).then((request) => request(this.axios, this.basePath));
+    public _delete(id: number, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration)._delete(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * 修改当前用户密码
-     * @summary 修改密码
-     * @param {ChangePasswordRequest} changePasswordRequest 
+     * 新しいテンプレートを作成します
+     * @summary テンプレート作成
+     * @param {ApplicationTemplateEntity} applicationTemplateEntity 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public changePassword(changePasswordRequest: ChangePasswordRequest, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).changePassword(changePasswordRequest, options).then((request) => request(this.axios, this.basePath));
+    public create(applicationTemplateEntity: ApplicationTemplateEntity, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).create(applicationTemplateEntity, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 新しい地域を作成します
+     * @summary 地域作成
+     * @param {RegionEntity} regionEntity 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public create1(regionEntity: RegionEntity, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).create1(regionEntity, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 新しい品目を作成します
+     * @summary 品目作成
+     * @param {ProductEntity} productEntity 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public create2(productEntity: ProductEntity, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).create2(productEntity, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 新しい国家を作成します
+     * @summary 国家作成
+     * @param {CountryEntity} countryEntity 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public create3(countryEntity: CountryEntity, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).create3(countryEntity, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -912,6 +1910,39 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
+     * 地域を削除します
+     * @summary 地域削除
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public delete1(id: number, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).delete1(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 品目を削除します
+     * @summary 品目削除
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public delete2(id: number, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).delete2(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 国家を削除します
+     * @summary 国家削除
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public delete3(id: number, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).delete3(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * 删除当前用户
      * @summary 删除用户
      * @param {DeleteUserRequest} deleteUserRequest 
@@ -923,7 +1954,7 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
-     * 根据用户ID获取用户信息
+     * 根据用户 ID 获取用户信息
      * @summary 获取用户信息
      * @param {string} userId 
      * @param {*} [options] Override http request option.
@@ -931,6 +1962,70 @@ export class DefaultApi extends BaseAPI {
      */
     public getUser(userId: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).getUser(userId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 根据当前登录用户返回对应的导航菜单
+     * @summary 获取用户导航菜单
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public getUserNavigations(options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).getUserNavigations(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 条件を指定してテンプレートの一覧を取得します
+     * @summary テンプレート一覧取得
+     * @param {number} [regionCd] 
+     * @param {number} [countryCd] 
+     * @param {number} [productCd] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public list(regionCd?: number, countryCd?: number, productCd?: number, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).list(regionCd, countryCd, productCd, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * すべての地域を取得します
+     * @summary 地域一覧取得
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public list1(options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).list1(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * すべての品目を取得します
+     * @summary 品目一覧取得
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public list2(options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).list2(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * すべての国家を取得します
+     * @summary 国家一覧取得
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public list3(options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).list3(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 地域コードを指定して国家の一覧を取得します
+     * @summary 地域別国家取得
+     * @param {number} regionCd 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public listByRegion(regionCd: number, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).listByRegion(regionCd, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -945,7 +2040,7 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
-     * 清除认证信息并删除refresh token
+     * 清除认证信息并删除 refresh token
      * @summary 用户登出
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -986,6 +2081,54 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
+     * テンプレート情報を更新します
+     * @summary テンプレート更新
+     * @param {number} id 
+     * @param {ApplicationTemplateEntity} applicationTemplateEntity 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public update(id: number, applicationTemplateEntity: ApplicationTemplateEntity, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).update(id, applicationTemplateEntity, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 地域情報を更新します
+     * @summary 地域更新
+     * @param {number} id 
+     * @param {RegionEntity} regionEntity 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public update1(id: number, regionEntity: RegionEntity, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).update1(id, regionEntity, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 品目情報を更新します
+     * @summary 品目更新
+     * @param {number} id 
+     * @param {ProductEntity} productEntity 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public update2(id: number, productEntity: ProductEntity, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).update2(id, productEntity, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 国家情報を更新します
+     * @summary 国家更新
+     * @param {number} id 
+     * @param {CountryEntity} countryEntity 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public update3(id: number, countryEntity: CountryEntity, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).update3(id, countryEntity, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * 更新当前用户信息
      * @summary 更新用户信息
      * @param {UpdateUserRequest} updateUserRequest 
@@ -994,96 +2137,6 @@ export class DefaultApi extends BaseAPI {
      */
     public updateUser(updateUserRequest: UpdateUserRequest, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).updateUser(updateUserRequest, options).then((request) => request(this.axios, this.basePath));
-    }
-}
-
-
-
-/**
- * NavigationControllerApi - axios parameter creator
- */
-export const NavigationControllerApiAxiosParamCreator = function (configuration?: Configuration) {
-    return {
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getUserNavigations: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/navigations/user`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = '*/*';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-    }
-};
-
-/**
- * NavigationControllerApi - functional programming interface
- */
-export const NavigationControllerApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = NavigationControllerApiAxiosParamCreator(configuration)
-    return {
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getUserNavigations(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResponseListNavigationDTO>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getUserNavigations(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['NavigationControllerApi.getUserNavigations']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-    }
-};
-
-/**
- * NavigationControllerApi - factory interface
- */
-export const NavigationControllerApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = NavigationControllerApiFp(configuration)
-    return {
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getUserNavigations(options?: RawAxiosRequestConfig): AxiosPromise<ResponseListNavigationDTO> {
-            return localVarFp.getUserNavigations(options).then((request) => request(axios, basePath));
-        },
-    };
-};
-
-/**
- * NavigationControllerApi - object-oriented interface
- */
-export class NavigationControllerApi extends BaseAPI {
-    /**
-     * 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public getUserNavigations(options?: RawAxiosRequestConfig) {
-        return NavigationControllerApiFp(this.configuration).getUserNavigations(options).then((request) => request(this.axios, this.basePath));
     }
 }
 

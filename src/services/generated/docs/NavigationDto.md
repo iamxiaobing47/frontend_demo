@@ -6,8 +6,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **pk** | **number** |  | [optional] [default to undefined]
-**chineseName** | **string** |  | [optional] [default to undefined]
-**englishName** | **string** |  | [optional] [default to undefined]
+**name** | **string** |  | [optional] [default to undefined]
 **path** | **string** |  | [optional] [default to undefined]
 **icon** | **string** |  | [optional] [default to undefined]
 **sortOrder** | **number** |  | [optional] [default to undefined]
@@ -22,8 +21,7 @@ import { NavigationDTO } from './api';
 
 const instance: NavigationDTO = {
     pk,
-    chineseName,
-    englishName,
+    name,
     path,
     icon,
     sortOrder,

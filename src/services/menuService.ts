@@ -1,5 +1,5 @@
 import apiClient from '@/services/httpClient'
-import { NavigationControllerApi } from '@/services/generated/api'
+import { DefaultApi } from '@/services/generated/api'
 import { NavigationDTO } from '@/services/generated/api'
 
 export interface ApiResponse<T = any> {
@@ -12,7 +12,7 @@ export const menuService = {
   // 1. 获取用户特定的导航菜单数据
   getUserMenus: async (): Promise<ApiResponse<NavigationDTO[]>> => {
     try {
-      const api = new NavigationControllerApi(undefined, '', apiClient)
+      const api = new DefaultApi(undefined, '', apiClient)
       const response = await api.getUserNavigations()
       return {
         success: true,
