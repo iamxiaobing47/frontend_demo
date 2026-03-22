@@ -69,6 +69,9 @@
                 label="国"
                 required
                 :rules="[v => !!v || '国は必須です']"
+                :disabled="!form.regionCd"
+                :hint="!form.regionCd ? '先に地域を選択してください' : ''"
+                persistent-hint
               />
             </v-col>
             <v-col cols="12" md="4">
@@ -127,7 +130,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, shallowRef, computed, onMounted } from 'vue'
+import { ref, shallowRef, computed, onMounted, watch } from 'vue'
 import { useConfigStore, type ApplicationTemplate } from '@/stores/configStore'
 
 const configStore = useConfigStore()
@@ -160,8 +163,20 @@ const form = ref<ApplicationTemplate>(defaultForm())
 const deleteItem = ref<ApplicationTemplate | null>(null)
 
 const regionOptions = computed(() => configStore.regionList)
-const countryOptions = computed(() => configStore.countryList)
+// 地域でフィルタリングされた国家一覧
+const countryOptions = computed(() => {
+  if (!form.value || !form.value.regionCd) return []
+  return configStore.countryList.filter(c => c.regionCd === form.value.regionCd)
+})
 const productOptions = computed(() => configStore.productList)
+
+// 地域が変更された場合、選択中の国をリセット（地域と国の整合性を保つため）
+watch(() => form.value?.regionCd, (newRegionCd, oldRegionCd) => {
+  // 地域が変更された場合、国をリセット
+  if (newRegionCd && newRegionCd !== oldRegionCd) {
+    form.value.countryCd = 0
+  }
+})
 
 const getRegionName = (regionCd: number) => {
   const region = configStore.regionList.find(r => r.regionCd === regionCd)
@@ -181,14 +196,31 @@ const getProductName = (productCd: number) => {
 const openDialog = (item?: ApplicationTemplate) => {
   if (item) {
     form.value = { ...item }
+    isEditing.value = true
   } else {
     form.value = defaultForm()
+    isEditing.value = false
   }
   dialog.value = true
 }
 
 const save = async () => {
-  if (!form.value.templateNm || !form.value.filePath || !form.value.regionCd || !form.value.countryCd || !form.value.productCd) return
+  if (!form.value.templateNm || !form.value.filePath) {
+    alert('テンプレート名とファイルパスは必須です')
+    return
+  }
+  if (!form.value.regionCd) {
+    alert('地域を選択してください')
+    return
+  }
+  if (!form.value.countryCd) {
+    alert('国を選択してください')
+    return
+  }
+  if (!form.value.productCd) {
+    alert('品目を選択してください')
+    return
+  }
 
   saving.value = true
   try {
@@ -200,8 +232,12 @@ const save = async () => {
     dialog.value = false
   } catch (error: any) {
     console.error('保存エラー:', error)
-    console.error('エラー詳細:', error.response?.data)
-    alert('保存に失敗しました：' + (error.response?.data?.message || error.message))
+    // 后端验证错误处理
+    if (error.data && typeof error.data === 'object') {
+      alert('保存に失敗しました：' + JSON.stringify(error.data))
+    } else {
+      alert('保存に失敗しました：' + (error.message || '不明なエラー'))
+    }
   } finally {
     saving.value = false
   }
