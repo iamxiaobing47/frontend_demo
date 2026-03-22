@@ -48,12 +48,16 @@ export const useConfigStore = defineStore('config', () => {
   }
 
   const createRegion = async (data: Region) => {
-    await apiClient.post(`${baseUrl}/region`, data)
+    console.log('Creating region with data:', JSON.stringify(data))
+    const response = await apiClient.post(`${baseUrl}/region`, data)
+    console.log('Create response:', response.data)
     await fetchRegion()
   }
 
   const updateRegion = async (id: number, data: Region) => {
-    await apiClient.put(`${baseUrl}/region/${id}`, data)
+    console.log(`Updating region ${id} with data:`, JSON.stringify(data))
+    const response = await apiClient.put(`${baseUrl}/region/${id}`, data)
+    console.log('Update response:', response.data)
     await fetchRegion()
   }
 
@@ -89,12 +93,16 @@ export const useConfigStore = defineStore('config', () => {
   }
 
   const createCountry = async (data: Country) => {
-    await apiClient.post(`${baseUrl}/country`, data)
+    console.log('Creating country with data:', JSON.stringify(data))
+    const response = await apiClient.post(`${baseUrl}/country`, data)
+    console.log('Create response:', response.data)
     await fetchCountry()
   }
 
   const updateCountry = async (id: number, data: Country) => {
-    await apiClient.put(`${baseUrl}/country/${id}`, data)
+    console.log(`Updating country ${id} with data:`, JSON.stringify(data))
+    const response = await apiClient.put(`${baseUrl}/country/${id}`, data)
+    console.log('Update response:', response.data)
     await fetchCountry()
   }
 
@@ -120,12 +128,16 @@ export const useConfigStore = defineStore('config', () => {
   }
 
   const createProduct = async (data: Product) => {
-    await apiClient.post(`${baseUrl}/product`, data)
+    console.log('Creating product with data:', JSON.stringify(data))
+    const response = await apiClient.post(`${baseUrl}/product`, data)
+    console.log('Create response:', response.data)
     await fetchProduct()
   }
 
   const updateProduct = async (id: number, data: Product) => {
-    await apiClient.put(`${baseUrl}/product/${id}`, data)
+    console.log(`Updating product ${id} with data:`, JSON.stringify(data))
+    const response = await apiClient.put(`${baseUrl}/product/${id}`, data)
+    console.log('Update response:', response.data)
     await fetchProduct()
   }
 

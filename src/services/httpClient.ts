@@ -93,7 +93,10 @@ apiClient.interceptors.response.use(
         showError(apiResponse.messageCode, apiResponse.messageArgs)
       }
 
-      return Promise.reject(new Error(apiResponse.messageCode || 'Request failed'))
+      // 保留原始响应数据，以便组件可以获取验证错误等信息
+      const rejectError: any = new Error(apiResponse.messageCode || 'Request failed')
+      rejectError.data = apiResponse.data
+      return Promise.reject(rejectError)
     }
 
     // 显示成功消息（如果有 messageCode）

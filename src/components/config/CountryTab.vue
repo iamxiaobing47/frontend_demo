@@ -36,20 +36,37 @@
     <v-dialog v-model="dialog" max-width="500">
       <v-card :title="isEditing ? '国家編集' : '国家追加'">
         <v-card-text>
+          <v-text-field
+            v-model="form.countryCd"
+            label="国コード"
+            type="number"
+            variant="outlined"
+            density="comfortable"
+            required
+            :rules="[v => v !== undefined && v !== null && v !== '' ? true : '国コードは必須です']"
+            :error-messages="getErrorMessages('countryCd')"
+            :disabled="isEditing"
+          />
           <v-select
             v-model="form.regionCd"
             :items="regionOptions"
             item-title="regionNm"
             item-value="regionCd"
             label="所属地域"
+            variant="outlined"
+            density="comfortable"
             required
             :rules="[v => !!v || '所属地域は必須です']"
+            :error-messages="getErrorMessages('regionCd')"
           />
           <v-text-field
             v-model="form.countryNm"
             label="国名"
+            variant="outlined"
+            density="comfortable"
             required
             :rules="[v => !!v || '国名は必須です']"
+            :error-messages="getErrorMessages('countryNm')"
           />
         </v-card-text>
         <v-card-actions>
@@ -93,9 +110,23 @@ const dialog = shallowRef(false)
 const deleteDialog = shallowRef(false)
 const saving = ref(false)
 const deleting = ref(false)
-const isEditing = computed(() => !!form.value.countryCd)
+// 编辑模式标志：true=编辑，false=新增
+const isEditing = ref(false)
+
+// 验证错误状态
+const validationErrors = ref<Record<string, string>>({})
+
+const clearErrors = () => {
+  validationErrors.value = {}
+}
+
+const getErrorMessages = (field: string): string[] => {
+  const error = validationErrors.value[field]
+  return error ? [error] : []
+}
 
 const defaultForm = (): Country => ({
+  countryCd: undefined,
   regionCd: 0,
   countryNm: '',
 })
@@ -111,27 +142,55 @@ const getRegionName = (regionCd: number) => {
 }
 
 const openDialog = (item?: Country) => {
+  clearErrors()
   if (item) {
     form.value = { ...item }
+    isEditing.value = true
   } else {
     form.value = defaultForm()
+    isEditing.value = false
   }
   dialog.value = true
 }
 
 const save = async () => {
-  if (!form.value.countryNm || !form.value.regionCd) return
+  clearErrors()
+  let hasError = false
+
+  // 表单验证：国コード必須
+  if (!form.value.countryCd) {
+    validationErrors.value.countryCd = '国コードは必須です'
+    hasError = true
+  }
+  // 表单验证：所属地域必須
+  if (!form.value.regionCd) {
+    validationErrors.value.regionCd = '所属地域は必須です'
+    hasError = true
+  }
+  // 表单验证：国名必須
+  if (!form.value.countryNm) {
+    validationErrors.value.countryNm = '国名は必須です'
+    hasError = true
+  }
+
+  if (hasError) return
 
   saving.value = true
   try {
     if (isEditing.value) {
-      await configStore.updateCountry(form.value.countryCd!, form.value)
+      // 更新時は pathVariable の ID を使用
+      await configStore.updateCountry(form.value.countryCd, form.value)
     } else {
+      // 新規作成時はフォームデータをそのまま送信
       await configStore.createCountry(form.value)
     }
     dialog.value = false
-  } catch (error) {
+  } catch (error: any) {
     console.error('保存エラー:', error)
+    // 后端验证错误处理：error.data 包含字段级错误
+    if (error.data && typeof error.data === 'object') {
+      validationErrors.value = error.data
+    }
   } finally {
     saving.value = false
   }

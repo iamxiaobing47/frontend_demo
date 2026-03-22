@@ -188,14 +188,7 @@ const openDialog = (item?: ApplicationTemplate) => {
 }
 
 const save = async () => {
-  if (!form.value.templateNm || !form.value.filePath) {
-    console.error('テンプレート名とファイルパスは必須です')
-    return
-  }
-  if (!form.value.regionCd || !form.value.countryCd || !form.value.productCd) {
-    console.error('地域、国、品目を選択してください')
-    return
-  }
+  if (!form.value.templateNm || !form.value.filePath || !form.value.regionCd || !form.value.countryCd || !form.value.productCd) return
 
   saving.value = true
   try {

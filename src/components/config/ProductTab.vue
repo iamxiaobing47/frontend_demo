@@ -31,10 +31,24 @@
       <v-card :title="isEditing ? '品目編集' : '品目追加'">
         <v-card-text>
           <v-text-field
+            v-model="form.productCd"
+            label="品目コード"
+            type="number"
+            variant="outlined"
+            density="comfortable"
+            required
+            :rules="[v => v !== undefined && v !== null && v !== '' ? true : '品目コードは必須です']"
+            :error-messages="getErrorMessages('productCd')"
+            :disabled="isEditing"
+          />
+          <v-text-field
             v-model="form.productNm"
             label="品目名"
+            variant="outlined"
+            density="comfortable"
             required
             :rules="[v => !!v || '品目名は必須です']"
+            :error-messages="getErrorMessages('productNm')"
           />
         </v-card-text>
         <v-card-actions>
@@ -77,9 +91,23 @@ const dialog = shallowRef(false)
 const deleteDialog = shallowRef(false)
 const saving = ref(false)
 const deleting = ref(false)
-const isEditing = computed(() => !!form.value.productCd)
+// 编辑模式标志：true=编辑，false=新增
+const isEditing = ref(false)
+
+// 验证错误状态
+const validationErrors = ref<Record<string, string>>({})
+
+const clearErrors = () => {
+  validationErrors.value = {}
+}
+
+const getErrorMessages = (field: string): string[] => {
+  const error = validationErrors.value[field]
+  return error ? [error] : []
+}
 
 const defaultForm = (): Product => ({
+  productCd: undefined,
   productNm: '',
 })
 
@@ -87,27 +115,50 @@ const form = ref<Product>(defaultForm())
 const deleteItem = ref<Product | null>(null)
 
 const openDialog = (item?: Product) => {
+  clearErrors()
   if (item) {
     form.value = { ...item }
+    isEditing.value = true
   } else {
     form.value = defaultForm()
+    isEditing.value = false
   }
   dialog.value = true
 }
 
 const save = async () => {
-  if (!form.value.productNm) return
+  clearErrors()
+  let hasError = false
+
+  // 表单验证：品目コード必須
+  if (!form.value.productCd) {
+    validationErrors.value.productCd = '品目コードは必須です'
+    hasError = true
+  }
+  // 表单验证：品目名必須
+  if (!form.value.productNm) {
+    validationErrors.value.productNm = '品目名は必須です'
+    hasError = true
+  }
+
+  if (hasError) return
 
   saving.value = true
   try {
     if (isEditing.value) {
-      await configStore.updateProduct(form.value.productCd!, form.value)
+      // 更新時は pathVariable の ID を使用
+      await configStore.updateProduct(form.value.productCd, form.value)
     } else {
+      // 新規作成時はフォームデータをそのまま送信
       await configStore.createProduct(form.value)
     }
     dialog.value = false
-  } catch (error) {
+  } catch (error: any) {
     console.error('保存エラー:', error)
+    // 后端验证错误处理：error.data 包含字段级错误
+    if (error.data && typeof error.data === 'object') {
+      validationErrors.value = error.data
+    }
   } finally {
     saving.value = false
   }
